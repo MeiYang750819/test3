@@ -17,6 +17,8 @@ const GameEngine = {
         examDateLocked: false,
         resultDate: null,    
         resultDateLocked: false,
+        bankDate: null,          /* 🌟 新增：決斷區銀行日期狀態 */
+        bankDateLocked: false,   /* 🌟 新增：決斷區銀行日期鎖定狀態 */
         appointmentTime: "2026-03-09 10:00", 
         appointmentLocation: "等待公會發布..."
     },
@@ -247,10 +249,17 @@ const GameEngine = {
             d2.value = this.state.resultDate || "";
             if (this.state.resultDateLocked) { d2.disabled = true; b2.innerText = "已鎖定"; b2.disabled = true; b2.style.opacity = "0.5"; }
         }
+        // 🌟 新增：決斷區銀行辦理日期控制
+        const d3 = document.getElementById('input-bank-date');
+        const b3 = document.getElementById('btn-lock-bank');
+        if (d3 && b3) {
+            d3.value = this.state.bankDate || "";
+            if (this.state.bankDateLocked) { d3.disabled = true; b3.innerText = "已鎖定"; b3.disabled = true; b3.style.opacity = "0.5"; }
+        }
     },
 
     lockDate(type) {
-        const id = type === 'exam' ? 'input-exam-date' : 'input-result-date';
+        const id = type === 'exam' ? 'input-exam-date' : type === 'result' ? 'input-result-date' : 'input-bank-date';
         const val = document.getElementById(id).value;
         if (!val) { alert("請先選擇日期！"); return; }
         
@@ -259,10 +268,12 @@ const GameEngine = {
         if (!confirmLock) return;
 
         if (type === 'exam') { this.state.examDate = val; this.state.examDateLocked = true; }
-        else { this.state.resultDate = val; this.state.resultDateLocked = true; }
+        else if (type === 'result') { this.state.resultDate = val; this.state.resultDateLocked = true; }
+        else if (type === 'bank') { this.state.bankDate = val; this.state.bankDateLocked = true; }
+        
         this.save(); 
         this.updateUI();
-        alert("已鎖定！無法再次修改。");
+        // 🎯 移除多餘的 "已鎖定！無法再次修改。" 第二層提示，讓體驗更順暢
     },
 
     requestChange() {
@@ -314,6 +325,19 @@ const GameEngine = {
             if (this.state.currentTrial >= n) {
                 btn.disabled = true;
                 btn.innerText = n === 3 ? "📝 已提交裝備" : n === 6 ? "👑 已完成榮耀" : "✓ 已完成試煉";
+                
+                // 🎯 鎖定該關卡內所有的 checkbox 與輸入框
+                const detailsBlock = btn.closest('details');
+                if (detailsBlock) {
+                    const inputs = detailsBlock.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        input.disabled = true;
+                        if(input.type === 'checkbox' || input.type === 'radio') {
+                            input.style.opacity = "0.5";
+                            input.style.cursor = "not-allowed";
+                        }
+                    });
+                }
             }
         });
     }
