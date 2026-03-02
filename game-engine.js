@@ -1,3 +1,6 @@
+//* --------配色／字級設定區（可自行調整）--------*//
+/* <======== 檔案用途：遊戲核心邏輯與狀態管理 ======== > */
+
 /* ================================================================
    【 ⚙️ GAME ENGINE - 最終完美版 】
    ================================================================ */
@@ -84,19 +87,52 @@ const GameEngine = {
                 box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-weight: bold;
             }
             .game-toast.show { right: 20px; }
-            /* 靜態漸層進度條 */
-            .progress-fill { background: linear-gradient(90deg, #ff4d4d 0%, #fbbf24 50%, #4ade80 100%) !important; }
         `;
         document.head.appendChild(style);
     },
 
-    // 💰 解鎖機制 (大摺疊、小摺疊、隱藏武器)
+    // 🌟 新增：針對單一特定元素進行閃爍特效，不再全域發光
+    flashElement(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('shiny-effect');
+            void el.offsetWidth;
+            el.classList.add('shiny-effect');
+        }
+    },
+
+    // 🌟 新增：主線防具與奇遇武器的專屬升級邏輯
+    upgradeArmor() {
+        let currentArmor = this.state.items.find(item => this.armorPath.includes(item));
+        if (currentArmor) {
+            let idx = this.armorPath.indexOf(currentArmor);
+            if (idx < this.armorPath.length - 1) {
+                let nextArmor = this.armorPath[idx + 1];
+                this.state.items = this.state.items.map(item => item === currentArmor ? nextArmor : item);
+                return true;
+            }
+        }
+        return false;
+    },
+
+    upgradeWeapon() {
+        let currentWeapon = this.state.items.find(item => Object.keys(this.weaponPaths).includes(item) || Object.values(this.weaponPaths).includes(item));
+        if (currentWeapon && this.weaponPaths[currentWeapon]) {
+            let nextWeapon = this.weaponPaths[currentWeapon];
+            this.state.items = this.state.items.map(item => item === currentWeapon ? nextWeapon : item);
+            return true;
+        }
+        return false;
+    },
+
+    // 💰 解鎖機制 (大摺疊、小摺疊、隱藏武器、防具彩蛋)
     unlock(event, id, action) {
         if (this.state.achievements.includes(id)) return;
         
         let scoreGain = 0;
         let toastMsg = "";
         let alertMsg = "";
+        let doFlashItem = false; // 是否要閃爍道具欄
         
         if (action === 'large_fold') {
             scoreGain = 2;
@@ -106,14 +142,19 @@ const GameEngine = {
             toastMsg = `✨ 深入探索，冒險積分+${scoreGain}`;
         } else if (action === 'explore2') {
             scoreGain = 1;
-            toastMsg = `🧩 探索重要情報，冒險積分 +${scoreGain}`;
+            toastMsg = `🧩 獲得情報，冒險積分 +${scoreGain}`;
+        } else if (action === 'explore_armor') {
+            scoreGain = 1;
+            toastMsg = `✨ 防具升級，冒險積分+${scoreGain}`;
+            if (this.upgradeArmor()) doFlashItem = true; // 觸發一次防具升級
         } else if (action === 'random_weapon') {
-            scoreGain = 5;
+            scoreGain = 3;
             const weapons = ['🗡️ 精鋼短劍', '🏹 獵人短弓', '🔱 鐵尖長槍'];
             const w = weapons[Math.floor(Math.random() * weapons.length)];
             this.state.weaponType = w;
             this.state.items.push(w);
             toastMsg = `⚔️ 獲得武器：${w}，戰力大幅提升！`;
+            doFlashItem = true;
         }
 
         if (alertMsg) { alert(alertMsg); }
@@ -125,8 +166,16 @@ const GameEngine = {
         
         setTimeout(() => {
             if (toastMsg) this.showToast(toastMsg);
-            this.triggerShiny();
             this.updateUI();
+            
+            // 🎯 精準控制誰該發光
+            if (scoreGain > 0 && action !== 'random_weapon') {
+                this.flashElement('score-text');
+            }
+            if (doFlashItem) {
+                this.flashElement('item-text'); // 道具閃爍
+                this.flashElement('rank-name'); // 戰力閃爍
+            }
         }, 1000);
     },
 
@@ -151,19 +200,7 @@ const GameEngine = {
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 500);
-        }, 4000);
-    },
-
-    triggerShiny() {
-        const targets = ['rank-text', 'score-text', 'status-tag'];
-        targets.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.remove('shiny-effect');
-                void el.offsetWidth;
-                el.classList.add('shiny-effect');
-            }
-        });
+        }, 3000); // 🎯 通知時間從 4 秒縮短為 3 秒
     },
 
     save() { localStorage.setItem('hero_progress', JSON.stringify(this.state)); },
@@ -172,8 +209,10 @@ const GameEngine = {
         const rank = this.ranks.find(r => this.state.score >= r.min) || this.ranks[this.ranks.length - 1];
         const rEl = document.getElementById('rank-text');
         const sEl = document.getElementById('status-tag');
-        if (rEl) rEl.innerHTML = `<span style="color:#fbbf24;">戰力：</span><span>${rank.title}</span>　｜　<span style="color:#fbbf24;">關卡：</span><span>${this.state.location}</span>`;
-        if (sEl) sEl.innerHTML = `<span style="color:#8ab4f8;">道具：</span><span>${this.state.items.join(' ')}</span>　｜　<span style="color:#8ab4f8;">狀態：</span><span id="dyn-status">${this.state.status}</span>`;
+        
+        // 🎯 將需要獨立閃爍的部分加上專屬 ID
+        if (rEl) rEl.innerHTML = `<span style="color:#fbbf24;">戰力：</span><span id="rank-name">${rank.title}</span>　｜　<span style="color:#fbbf24;">關卡：</span><span id="loc-text">${this.state.location}</span>`;
+        if (sEl) sEl.innerHTML = `<span style="color:#8ab4f8;">道具：</span><span id="item-text">${this.state.items.join(' ')}</span>　｜　<span style="color:#8ab4f8;">狀態：</span><span id="dyn-status">${this.state.status}</span>`;
         
         const scoreEl = document.getElementById('score-text');
         if (scoreEl) scoreEl.innerText = this.state.score + "分";
@@ -198,13 +237,13 @@ const GameEngine = {
         const b1 = document.getElementById('btn-lock-exam');
         if (d1 && b1) {
             d1.value = this.state.examDate || "";
-            if (this.state.examDateLocked) { d1.disabled = true; b1.innerText = "已鎖定"; b1.disabled = true; }
+            if (this.state.examDateLocked) { d1.disabled = true; b1.innerText = "已鎖定"; b1.disabled = true; b1.style.opacity = "0.5"; }
         }
         const d2 = document.getElementById('input-result-date');
         const b2 = document.getElementById('btn-lock-result');
         if (d2 && b2) {
             d2.value = this.state.resultDate || "";
-            if (this.state.resultDateLocked) { d2.disabled = true; b2.innerText = "已鎖定"; b2.disabled = true; }
+            if (this.state.resultDateLocked) { d2.disabled = true; b2.innerText = "已鎖定"; b2.disabled = true; b2.style.opacity = "0.5"; }
         }
     },
 
@@ -213,14 +252,15 @@ const GameEngine = {
         const val = document.getElementById(id).value;
         if (!val) { alert("請先選擇日期！"); return; }
         
-        const confirmLock = confirm("鎖定就不能更改，確定要鎖定嗎？");
+        // 🎯 點擊瞬間防呆，雙重確認後死鎖按鈕
+        const confirmLock = confirm("鎖定就不能更改了喔，確定要鎖定嗎？");
         if (!confirmLock) return;
 
         if (type === 'exam') { this.state.examDate = val; this.state.examDateLocked = true; }
         else { this.state.resultDate = val; this.state.resultDateLocked = true; }
         this.save(); 
         this.updateUI();
-        alert("鎖定就不能更改！");
+        alert("已鎖定！無法再次修改。");
     },
 
     requestChange() {
@@ -243,11 +283,25 @@ const GameEngine = {
     completeTrial(event, trialNum) {
         if (this.state.currentTrial >= trialNum) return;
         if (trialNum === 5 && !this.canUnlockTrial5().can) { alert(this.canUnlockTrial5().reason); return; }
+        
         const tData = this.trialsData[trialNum];
         this.state.currentTrial = trialNum;
         this.state.location = tData.loc;
         this.state.score += tData.scoreGain;
-        this.save(); this.updateUI();
+        
+        // 🎯 過關硬性升級判定：若防具或武器有進階，觸發更新與閃爍
+        let doFlashItem = false;
+        if (this.upgradeArmor()) doFlashItem = true;
+        if (this.upgradeWeapon()) doFlashItem = true;
+
+        this.save(); 
+        this.updateUI();
+
+        // 🎯 過關精準閃爍
+        if (doFlashItem) this.flashElement('item-text');
+        this.flashElement('loc-text');
+        this.flashElement('prog-val');
+        this.flashElement('score-text');
     },
 
     updateButtonStyles() {
