@@ -230,7 +230,15 @@
                     　　- 待公會完成最後審核<br>
                     　　- 正式踏入榮耀殿堂
                 </span>
-                <div class="action-center"><button class="btn-confirm" id="btn-trial-6" style="color:#fbbf24; border-color:#fbbf24;" onclick="GameEngine.completeTrial(event, 6)">👑 迎接最終榮耀</button></div>
+                
+                <label class="check-item"><input type="checkbox" id="chk-bank-have"> 已有台新國際商業銀行戶頭</label>
+                <label class="check-item"><input type="checkbox" id="chk-bank-process"> 申辦中</label>
+                <div class="tracking-box">
+                    <div class="date-row"><label>預計辦理日期：</label><input type="date" id="input-bank-date"><button class="btn-lock" id="btn-lock-bank" onclick="GameEngine.lockDate('bank')">確認</button></div>
+                    <div class="lock-note">⚠️ 日期一經鎖定無法修改,若需調整請洽人資承辦.</div>
+                </div>
+
+                <div class="action-center"><button class="btn-confirm" id="btn-trial-6" style="color:#fbbf24; border-color:#fbbf24;" onclick="checkTrial6(event)">👑 迎接最終榮耀</button></div>
             </div>
         </details>
 
@@ -256,6 +264,17 @@
         function checkTrial1(e) { if (!document.getElementById('chk-guide').checked || !document.getElementById('chk-forge').checked || !document.getElementById('chk-risk').checked) { alert("⚠️ 勇者請注意：必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 1); }
         function checkTrial3(e) { const chks = document.querySelectorAll('.chk-trial3'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇者請注意：前三項必備文件必須勾選完成，才能推進！"); return; } GameEngine.completeTrial(e, 3); }
         function checkTrial4(e) { const chks = document.querySelectorAll('.chk-trial4'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇者請注意：必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 4); }
+        
+        /* 🌟 新增：第六關決斷區防呆檢查 */
+        function checkTrial6(e) { 
+            const haveBank = document.getElementById('chk-bank-have').checked;
+            const processBank = document.getElementById('chk-bank-process').checked;
+            if (!haveBank && !processBank) { 
+                alert("⚠️ 勇者請注意：請勾選銀行戶頭狀態，才能推進！"); 
+                return; 
+            } 
+            GameEngine.completeTrial(e, 6); 
+        }
     </script>
 </body>
 </html>
