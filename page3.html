@@ -116,7 +116,7 @@
 
     <main class="tab-content active">
 
-        <details>
+        <details id="detail-trial-1" open>
             <summary class="main-summary">【新手報到】啟程點</summary>
             <div class="details-body">
                 <span class="task-target">
@@ -130,13 +130,13 @@
                 <label class="check-item"><input type="checkbox" id="chk-risk"> 若被退件「👤 本人承擔」</label>
                 
                 <div class="action-center">
-                    <button class="btn-confirm" id="btn-trial-1" onclick="checkTrial1(event)">✓ 完成新手報到</button>
+                    <button class="btn-confirm" id="btn-trial-1" onclick="checkTrial1(event)">🚀 提交本關任務</button>
                 </div>
             </div>
         </details>
 
 
-        <details>
+        <details id="detail-trial-2">
             <summary class="main-summary">【裝備盤點】行囊區</summary>
             <div class="details-body">
                 <span class="task-target">
@@ -151,13 +151,13 @@
                 <label class="check-item">其他：<span class="underline-text"></span></label>
                 
                 <div class="action-center">
-                    <button class="btn-confirm" id="btn-trial-2" onclick="GameEngine.completeTrial(event, 2)">✓ 完成裝備盤點</button>
+                    <button class="btn-confirm" id="btn-trial-2" onclick="GameEngine.completeTrial(event, 2)">🚀 提交本關任務</button>
                 </div>
             </div>
         </details>
 
 
-        <details>
+        <details id="detail-trial-3">
             <summary class="main-summary">【裝備強化】鑑定所</summary>
             <div class="details-body">
                 <span class="task-target">
@@ -180,13 +180,13 @@
                     <div class="lock-note">⚠️ 日期一經鎖定無法修改,若需調整請洽人資承辦.<br>⚠️ 無理由延期予以扣分,請再三確認後再動作.</div>
                 </div>
 
-                <div class="action-center"><button class="btn-confirm" id="btn-trial-3" onclick="checkTrial3(event)">✓ 完成報到文件提交</button></div>
+                <div class="action-center"><button class="btn-confirm" id="btn-trial-3" onclick="checkTrial3(event)">🚀 提交本關任務</button></div>
             </div>
         </details>
 
 
-        <details>
-            <summary class="main-summary">【戰前整備】準備營</summary>
+        <details id="detail-trial-4">
+            <summary class="main-summary">【戰役集結】前線營</summary>
             <div class="details-body">
                 <span class="task-target">
                     📣 任務目標 <br>
@@ -203,13 +203,13 @@
                 <label class="check-item"><input type="checkbox" class="chk-trial4"> 五大正本文件夾已備妥</label>
                 <label class="check-item"><input type="checkbox" class="chk-trial4"> 確認報到時間與地點</label>
 
-                <div class="action-center"><button class="btn-confirm" id="btn-trial-4" onclick="checkTrial4(event)">✓ 完成戰前準備</button></div>
+                <div class="action-center"><button class="btn-confirm" id="btn-trial-4" onclick="checkTrial4(event)">🚀 提交本關任務</button></div>
             </div>
         </details>
 
 
-        <details>
-            <summary class="main-summary">【最終考驗】報到日</summary>
+        <details id="detail-trial-5">
+            <summary class="main-summary">【最終戰役】誓約日</summary>
             <div class="details-body">
                 <span class="task-target">
                     📣 任務目標 <br>
@@ -217,13 +217,13 @@
                     　　- 勞動契約查看並簽署
                 </span>
                 <a href="https://mys0819.github.io/LCS1/" target="_blank" class="external-link">🔗 開啟勞工名卡填寫表單</a>
-                <div class="action-center"><button class="btn-confirm" id="btn-trial-5" onclick="GameEngine.completeTrial(event, 5)">✓ 完成最終考驗</button></div>
+                <div class="action-center"><button class="btn-confirm" id="btn-trial-5" onclick="GameEngine.completeTrial(event, 5)">🚀 提交本關任務</button></div>
             </div>
         </details>
 
 
-        <details>
-            <summary class="main-summary">【完成試煉】決斷區</summary>
+        <details id="detail-trial-6">
+            <summary class="main-summary">【榮耀加冕】聖殿區</summary>
             <div class="details-body">
                 <span class="task-target">
                     📣 任務目標 <br>
@@ -265,7 +265,6 @@
         function checkTrial3(e) { const chks = document.querySelectorAll('.chk-trial3'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇者請注意：前三項必備文件必須勾選完成，才能推進！"); return; } GameEngine.completeTrial(e, 3); }
         function checkTrial4(e) { const chks = document.querySelectorAll('.chk-trial4'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇者請注意：必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 4); }
         
-        /* 🌟 新增：第六關決斷區防呆檢查 */
         function checkTrial6(e) { 
             const haveBank = document.getElementById('chk-bank-have').checked;
             const processBank = document.getElementById('chk-bank-process').checked;
