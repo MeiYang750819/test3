@@ -1,3 +1,6 @@
+//* --------配色／字級設定區（可自行調整）--------*//
+/* <======== 檔案用途：全站通用視覺控制面板 ======== > */
+
 /* ================================================================
 【 🎨 STYLE CONFIG - 全站通用視覺控制面板 】
 描述：負責全站色彩、字體、摺疊選單與版權區視覺。
@@ -5,33 +8,33 @@
 
 :root {
   /* ------------------------------------------------------------
-      📌 [全站暗黑背景與字體顏色定義]
-      說明：統一管理全站的漸層底色與字體顏色，方便後續一鍵抽換
-      ------------------------------------------------------------ */
+     📌 [全站暗黑背景與字體顏色定義]
+     說明：統一管理全站的漸層底色與字體顏色，方便後續一鍵抽換
+     ------------------------------------------------------------ */
   --bg-style-1: linear-gradient(0deg, rgba(43,37,37,1) 0%, rgba(0,0,0,1) 100%); /* 全站主底層背景：由深咖漸變至黑 */
   --bg-style-2: linear-gradient(180deg, #1a1a1a 0%, #333333 100%);             /* 備用背景：由極深灰漸變至深灰 */
   --bg-style-3: #262626;                                                      /* 純色背景：用於摺疊選單展開後的底色 */
   --main-textColor: #FFFFFF;                                                  /* 全站預設主要文字顏色：純白 */
 
   /* ------------------------------------------------------------
-      📌 [分頁一：內容說明] 手冊與規範
-      ------------------------------------------------------------ */
+     📌 [分頁一：內容說明] 手冊與規範
+     ------------------------------------------------------------ */
   --p1-headerColor: #1a1a1a;         /* 頂部兩層固定列 (極深灰) */
   --p1-bgColor: var(--bg-style-1);   /* 頁面背景套用漸層1號 */
   --p1-titleColor: #FFFFFF;          /* 頂部狀態列的文字顏色 */
   --p1-textColor: #FFFFFF;           /* 內容區的說明文字顏色 */
 
   /* ------------------------------------------------------------
-      📌 [分頁二：上傳說明] 視覺化教學
-      ------------------------------------------------------------ */
+     📌 [分頁二：上傳說明] 視覺化教學
+     ------------------------------------------------------------ */
   --p2-headerColor: #1a1a1a;         /* 頂部兩層固定列 (極深灰) */
   --p2-bgColor: var(--bg-style-1);   /* 頁面背景套用漸層1號 */
   --p2-titleColor: #FFFFFF;          /* 頂部狀態列的文字顏色 */
   --p2-textColor: #FFFFFF;           /* 內容區的說明文字顏色 */
 
   /* ------------------------------------------------------------
-      📌 [分頁三：報到流程] 動態闖關區 (未來擴充預留)
-      ------------------------------------------------------------ */
+     📌 [分頁三：報到流程] 動態闖關區 (未來擴充預留)
+     ------------------------------------------------------------ */
   --p3-headerColor: #1a1a1a;   /* 頂部兩層固定列 (極深灰) */
   --p3-bgColor: var(--bg-style-1); /* 頁面背景套用漸層1號 */
   --p3-titleColor: #FFFFFF;    /* 頂部狀態列的文字顏色 */
@@ -121,7 +124,13 @@ body {
   vertical-align: middle; /* 與文字垂直置中對齊 */
   margin-left: 8px;
 }
-.progress-fill { background: #10b981; height: 100%; transition: width 0.5s ease, background-color 0.5s ease; } /* 綠色填滿區段與動畫(新增背景色漸變動畫) */
+/* 🌟 新增：靜態漸層進度條（左紅、中黃、右綠固定位置） */
+.progress-fill { 
+  background: linear-gradient(90deg, #ff4d4d 0%, #fbbf24 50%, #4ade80 100%); /* 固定漸層色帶 */
+  background-size: 60px 100%; /* 強制色帶寬度與軌道同寬，不隨 width 縮放變形 */
+  height: 100%; 
+  transition: width 0.5s ease; /* 只有寬度會改變，像遮罩一樣慢慢露出綠色 */
+} 
 
 /* 🎨 顏色連動邏輯 (核心修正：確保漸層背景正常顯示) */
 /* 使用 background: var(...) 而不是 background-color: ，因為線性漸層是圖片屬性 */
@@ -312,6 +321,8 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
     .progress-track {
         width: 80px;
     }
+    /* 🌟 新增：電腦版進度條底色也要同步拉長確保漸層正確 */
+    .progress-fill { background-size: 80px 100%; }
 }
 
 /* ================================================================
@@ -347,18 +358,6 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
     30% { text-shadow: 0 0 20px #fbbf24, 0 0 40px #fbbf24, 0 0 60px #ffffff; transform: scale(1.2); color: #ffffff; }
     70% { text-shadow: 0 0 20px #fbbf24, 0 0 40px #fbbf24, 0 0 60px #ffffff; transform: scale(1.2); color: #ffffff; }
     100% { text-shadow: none; transform: scale(1); color: inherit; }
-}
-
-/* 進度條專用的超級閃爍特效 (連外框一起發光) */
-.bar-flash {
-    animation: superGlowBar 1.5s ease-in-out forwards;
-}
-
-@keyframes superGlowBar {
-    0% { box-shadow: none; filter: brightness(1); }
-    30% { box-shadow: 0 0 15px #fbbf24, 0 0 30px #ffffff; filter: brightness(1.5); }
-    70% { box-shadow: 0 0 15px #fbbf24, 0 0 30px #ffffff; filter: brightness(1.5); }
-    100% { box-shadow: none; filter: brightness(1); }
 }
 
 /* 🎯 第三關體檢追蹤專屬樣式 - 不動原有 style */
