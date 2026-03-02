@@ -131,4 +131,49 @@
                         <figcaption class="sample-cap">❌ 錯誤範例-有小手手入鏡</figcaption>
                     </figure>
                     <figure class="sample-box" onclick="zoomImg(this)">
-                        <img class="sample-img" src="assets/戶頭錯誤範例
+                        <img class="sample-img" src="assets/戶頭錯誤範例.jpg" alt="❗️戶頭錯誤範例.jpg">
+                        <figcaption class="sample-cap">❌ 錯誤範例-需要好閱讀</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </details>
+    </main>
+
+    <footer class="footer">
+        <img src="assets/MYs_logo_去背.png" alt="MYs Logo" class="footer-logo">
+        © Copyright 2026 MYs System-b1.0.0-02-22-2026-115
+    </footer>
+
+    <script>
+        const fetchedData = {
+            companyName: "FIZZ FIZZ.TAIPEI", 
+            team: "外場團隊",
+            type: "兼職",
+            userName: "測試員"
+        };
+
+        function applyData(data) {
+            document.querySelectorAll('.dyn-company').forEach(el => el.innerText = data.companyName);
+            document.querySelectorAll('.dyn-team').forEach(el => el.innerText = data.team);
+            document.querySelectorAll('.dyn-type').forEach(el => el.innerText = data.type);
+            document.querySelectorAll('.dyn-name').forEach(el => el.innerText = data.userName);
+        }
+
+        function zoomImg(el) {
+            const img = el.querySelector('img');
+            if(img) {
+                document.getElementById('lightbox-img').src = img.src;
+                document.getElementById('lightbox').style.display = 'flex';
+            }
+        }
+
+        /* 🎯 修正點：確保頂部戰力資訊與進度條同步初始化 */
+        window.addEventListener('load', () => { 
+            applyData(fetchedData); 
+            if (typeof GameEngine !== 'undefined') {
+                GameEngine.init(); 
+            }
+        });
+    </script>
+</body>
+</html>
