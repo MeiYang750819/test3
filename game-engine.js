@@ -1,4 +1,4 @@
-//* --------配色／字級設定區（可自行調整）--------*//
+/* --------配色／字級設定區（可自行調整）-------- */
 /* <======== 檔案用途：遊戲核心邏輯與狀態管理 ======== > */
 
 /* ================================================================
@@ -28,7 +28,7 @@ const GameEngine = {
         { min: 60,  title: "🥇 B級 穩健玩家" },
         { min: 40,  title: "🥈 C級 潛力玩家" },
         { min: 20,  title: "🥉 D級 基礎學徒" },
-        { min: 10,   title: "🌱 實習小萌新" },
+        { min: 10,  title: "🌱 實習小萌新" },
         { min: 0,   title: "🥚 報到新手村" }
     ],
 
@@ -73,12 +73,14 @@ const GameEngine = {
                 font-weight: bold; font-size: 28px; text-shadow: 0 0 10px rgba(251,191,36,0.8);
                 z-index: 10000; animation: floatUp 1.5s forwards;
             }
+            /* 🎯 強化閃爍特效：放大到 1.3倍，高光轉白色，四周爆出金色光暈 */
             @keyframes shinyUpdate {
-                0% { filter: brightness(1); transform: scale(1); }
-                50% { filter: brightness(1.8); transform: scale(1.05); color: #4ade80; text-shadow: 0 0 10px #4ade80; }
-                100% { filter: brightness(1); transform: scale(1); }
+                0% { filter: brightness(1); transform: scale(1); color: inherit; }
+                40% { filter: brightness(2); transform: scale(1.3); color: #ffffff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24, 0 0 45px #fbbf24; }
+                60% { filter: brightness(2); transform: scale(1.3); color: #ffffff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24, 0 0 45px #fbbf24; }
+                100% { filter: brightness(1); transform: scale(1); color: inherit; }
             }
-            .shiny-effect { animation: shinyUpdate 0.8s ease-in-out; display: inline-block; }
+            .shiny-effect { animation: shinyUpdate 1s ease-in-out; display: inline-block; }
             .game-toast {
                 position: fixed; bottom: 20px; right: -300px;
                 background: #1a1a1a; color: #efefef; border: 1px solid #fbbf24;
