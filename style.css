@@ -124,7 +124,7 @@ body {
   vertical-align: middle; /* 與文字垂直置中對齊 */
   margin-left: 8px;
 }
-/* 🌟 新增：靜態漸層進度條（左紅、中黃、右綠固定位置） */
+/* 🌟 靜態漸層進度條（左紅、中黃、右綠固定位置） */
 .progress-fill { 
   background: linear-gradient(90deg, #ff4d4d 0%, #fbbf24 50%, #4ade80 100%); /* 固定漸層色帶 */
   background-size: 60px 100%; /* 強制色帶寬度與軌道同寬，不隨 width 縮放變形 */
@@ -157,6 +157,14 @@ details {
   margin-bottom: 12px;                   /* 摺疊框之間的距離 */
   box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* 暗黑模式下的陰影加深 */
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* 🌟 新增：關卡鎖定時的防偷跑視覺 */
+.locked-details { 
+    pointer-events: none; 
+    opacity: 0.4; 
+    filter: grayscale(100%); 
 }
 
 /* <summary> 摺疊選單的標題列 */
@@ -321,7 +329,7 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
     .progress-track {
         width: 80px;
     }
-    /* 🌟 新增：電腦版進度條底色也要同步拉長確保漸層正確 */
+    /* 🌟 電腦版進度條底色也要同步拉長確保漸層正確 */
     .progress-fill { background-size: 80px 100%; }
 }
 
@@ -390,3 +398,20 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
 }
 .btn-lock:disabled { opacity: 0.3; cursor: not-allowed; border-color: #555; }
 .lock-note { font-size: 13px; color: #ff8a8a; line-height: 1.6; display: block; margin-top: 10px; }
+
+/* 🌟 延宕警告遮罩層專屬動畫與樣式 */
+#delay-warning-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 10005; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+#delay-warning-overlay.active { opacity: 1; pointer-events: all; }
+.warning-icon { font-size: 80px; animation: heavyFlash 0.5s 3; }
+.warning-text { color: #ef4444; font-size: 20px; font-weight: bold; margin-top: 20px; opacity: 0; transition: opacity 1s; }
+.warning-text.show { opacity: 1; }
+@keyframes heavyFlash { 
+    0% { opacity: 1; transform: scale(1); filter: brightness(1); } 
+    50% { opacity: 0; transform: scale(1.5); filter: brightness(2); } 
+    100% { opacity: 1; transform: scale(1); filter: brightness(1); } 
+}
