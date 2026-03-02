@@ -11,99 +11,99 @@
     <style>
         /* --- 📋 基礎文字容器樣式 --- */
         .details-body { 
-            color: #b0b0b0;              /* 文字顏色 (設定為淺灰色以符合暗色系背景) */
-            white-space: normal !important; /* 強制換行 (確保文字自動折行) */
-            line-height: 1.6;             /* 行高設定 (增加文字行距，提升閱讀舒適度) */
+            color: #b0b0b0;              /* 文字顏色：淺灰色 */
+            white-space: normal !important; /* 強制自動換行 */
+            line-height: 1.6;             /* 行高設定：提升閱讀舒適度 */
         }
 
         /* --- 📣 任務目標標題樣式 (#cccccc) --- */
         .task-target { 
-            color: #cccccc;              /* 標題顏色 (設定為中灰色，區分任務目標) */
-            font-weight: bold;           /* 文字加粗 (強調任務目標的重要性) */
-            display: block;              /* 區塊顯示 (讓標題單獨佔據一行空間) */
-            margin-bottom: 12px;         /* 下方間距 (與下方的勾選清單保持距離) */
+            color: #cccccc;              /* 標題顏色：中灰色 */
+            font-weight: bold;           /* 文字加粗 */
+            display: block;              /* 區塊顯示：獨立佔據一行 */
+            margin-bottom: 12px;         /* 下方間距 */
         }
 
         /* --- ✅ 勾選項目容器樣式 --- */
         .check-item { 
-            display: flex;               /* 彈性佈局 (讓勾選框與文字水平並排) */
-            align-items: center;         /* 垂直居中 (確保勾選框與文字中心線對齊) */
-            margin-bottom: 12px;         /* 下方間距 (每個選項之間保持固定間隔) */
-            color: #a0a0a0;              /* 文字顏色 (設定為灰白色) */
-            font-size: 14px;             /* 字體大小 (標準 14 像素) */
-            cursor: pointer;             /* 手指游標 (代表該區域可以點擊) */
+            display: flex;               /* 彈性佈局 */
+            align-items: center;         /* 垂直居中 */
+            margin-bottom: 12px;         /* 選項間隔 */
+            color: #a0a0a0;              /* 灰白色 */
+            font-size: 14px;             /* 14 像素 */
+            cursor: pointer;             /* 手指游標 */
         }
 
         /* --- 🟦 勾選框本體樣式 --- */
         .check-item input { 
-            margin-right: 10px;          /* 右方間距 (勾選框與文字保持距離) */
-            width: 18px;                 /* 框體寬度 (18 像素) */
-            height: 18px;                /* 框體高度 (18 像素) */
-            flex-shrink: 0;              /* 防止擠壓 (避免勾選框在手機版被壓扁) */
+            margin-right: 10px;          /* 框與文字距離 */
+            width: 18px;                 /* 框寬度：18 像素 */
+            height: 18px;                /* 框高度：18 像素 */
+            flex-shrink: 0;              /* 防止被壓扁 */
         }
 
         /* --- 🌐 外部連結樣式 --- */
         .external-link { 
-            color: #8ab4f8;              /* 連結顏色 (淡藍色) */
-            text-decoration: underline;  /* 文字底線 (標示連結) */
-            font-weight: bold;           /* 文字加粗 */
+            color: #8ab4f8;              /* 淡藍色 */
+            text-decoration: underline;  /* 底線標示 */
+            font-weight: bold;           /* 加粗連結 */
             display: inline-block;       /* 行內區塊 */
             margin: 10px 0;              /* 上下間距 */
-            transition: 0.3s;            /* 動態過渡 (變色時間) */
+            transition: 0.3s;            /* 變色過渡 */
         }
-        .external-link:hover { color: #4ade80; } /* 滑鼠移入變綠色 */
+        .external-link:hover { color: #4ade80; } /* 移入變綠色 */
 
         /* --- 🕒 體檢進度追蹤外框 --- */
         .tracking-box { 
-            background: rgba(0,0,0,0.2); /* 背景顏色 (黑色背景 20% 透明度) */
-            padding: 20px;               /* 內距空間 (外框與文字的距離) */
-            border-radius: 8px;          /* 圓角設定 (圓滑效果) */
-            border: 1px dashed #555;     /* 邊框樣式 (灰色虛線邊框) */
-            margin: 20px 0;              /* 外距空間 (上下元件間隔) */
+            background: rgba(0,0,0,0.2);     /* 背景顏色：黑色 20% 透明 */
+            padding: 20px;                   /* 內距空間 */
+            border-radius: 8px;              /* 圓角設定：8 像素 */
+            border: 1px dashed #555;        /* 邊框樣式：1 像素灰色虛線 */
+            margin: 20px 0;                  /* 外距空間 */
         }
 
         /* --- 📅 日期列排版樣式 --- */
         .date-row { 
-            display: flex;               /* 彈性佈局 (標籤、框、按鈕並排) */
-            align-items: center;         /* 垂直居中 */
-            justify-content: space-between; /* 兩端對齊 */
-            margin-bottom: 15px;         /* 下方間距 */
-            gap: 10px;                   /* 元件間小間距 */
+            display: flex;                   /* 標籤與框並排 */
+            align-items: center;             /* 垂直居中 */
+            justify-content: space-between;  /* 兩端對齊 */
+            margin-bottom: 15px;             /* 列間距 */
+            gap: 10px;                       /* 元件小空隙 */
         }
 
         /* --- 🗓️ 日期輸入框樣式 --- */
         .date-row input { 
-            background: #1a1a1a;         /* 背景深灰色 */
-            border: 1px solid #444;      /* 深灰邊框 */
-            color: #fff;                 /* 白色文字 */
-            padding: 8px;                /* 框內空間 */
-            border-radius: 4px;          /* 圓角設定 */
-            flex: 2;                     /* 比例設定 */
-            text-align: center;          /* 文字居中 */
+            background: #1a1a1a;             /* 深灰色背景 */
+            border: 1px solid #444;          /* 深灰實線邊框 */
+            color: #fff;                     /* 白色文字 */
+            padding: 8px;                    /* 框內空間 */
+            border-radius: 4px;              /* 4 像素圓角 */
+            flex: 2;                         /* 佔據 2 份比例 */
+            text-align: center;              /* 數字置中 */
         }
 
-        /* --- 🔒 鎖定按鈕 --- */
+        /* --- 🔒 鎖定確認按鈕 --- */
         .btn-lock { 
-            background: #232a35;         /* 深藍背景 */
-            color: #4ade80;              /* 綠色文字 */
-            border: 1px solid #4ade80;   /* 綠色邊框 */
-            padding: 8px 12px;           /* 內距空間 */
-            border-radius: 4px;          /* 圓角設定 */
-            cursor: pointer;             /* 指示游標 */
-            flex: 1;                     /* 比例設定 */
+            background: #232a35;             /* 深藍灰背景 */
+            color: #4ade80;                  /* 綠色文字 */
+            border: 1px solid #4ade80;       /* 綠色框線 */
+            padding: 8px 12px;               /* 內距 */
+            border-radius: 4px;              /* 圓角 */
+            cursor: pointer;                 /* 可點擊 */
+            flex: 1;                         /* 佔據 1 份比例 */
         }
 
-        /* --- ⚔️ 關卡確認大按鈕 --- */
+        /* --- ⚔️ 關卡完成大按鈕 --- */
         .btn-confirm { 
-            width: 100%;                 /* 寬度 100% */
-            padding: 14px;               /* 高度感 */
-            background: #2d3748;         /* 深青色背景 */
-            color: #4ade80;              /* 亮綠色文字 */
-            font-weight: bold;           /* 加粗 */
-            border: 1px solid #4ade80;   /* 綠色邊框 */
-            border-radius: 6px;          /* 圓角設定 */
-            cursor: pointer;             /* 手指游標 */
-            transition: all 0.3s ease;   /* 動態緩衝 */
+            width: 100%;                     /* 撐滿寬度 */
+            padding: 14px;                   /* 高度舒適 */
+            background: #2d3748;             /* 深青色背景 */
+            color: #4ade80;                  /* 亮綠色字體 */
+            font-weight: bold;               /* 字體加粗 */
+            border: 1px solid #4ade80;       /* 綠色邊框 */
+            border-radius: 6px;              /* 圓角效果 */
+            cursor: pointer;                 /* 手指游標 */
+            transition: all 0.3s ease;       /* 變色緩衝時間 */
         }
         .btn-confirm:hover { background: #4ade80; color: #000; }
     </style>
@@ -117,20 +117,12 @@
         <span class="dyn-name">載入中...</span>
     </div>
 
-    <div class="sticky-bar" id="block-status-1" style="top: 45px;">
-        <span style="color:#fbbf24;">戰力：</span><span id="rank-val">載入中...</span>　｜　
-        <span style="color:#fbbf24;">關卡：</span><span id="loc-val">載入中...</span>
-    </div>
-
-    <div class="sticky-bar" id="block-status-2" style="top: 90px;">
-        <span style="color:#8ab4f8;">道具：</span><span id="items-val">載入中...</span>　｜　
-        <span style="color:#8ab4f8;">狀態：</span><span id="status-val">載入中...</span>
-    </div>
-
+    <div class="sticky-bar" id="block-status-1" style="top: 45px;"><span style="color:#fbbf24;">戰力：</span><span id="rank-val">載入中...</span>　｜　<span style="color:#fbbf24;">關卡：</span><span id="loc-val">載入中...</span></div>
+    <div class="sticky-bar" id="block-status-2" style="top: 90px;"><span style="color:#8ab4f8;">道具：</span><span id="items-val">載入中...</span>　｜　<span style="color:#8ab4f8;">狀態：</span><span id="status-val">載入中...</span></div>
     <div class="sticky-bar" id="block-status-3" style="top: 135px;">
-        <span style="color:#ff8a8a;">🏆 冒險積分：</span><span id="score-val">0分</span>
+        🏆 冒險積分：<span id="score-val">0分</span>
         <div class="progress-track"><div class="progress-fill" id="score-fill" style="width: 0%;"></div></div>
-        　｜　<span style="color:#ff8a8a;">⚔️ 攻略進度：</span><span id="prog-val">0%</span>
+        　｜　⚔️ 攻略進度：<span id="prog-val">0%</span>
         <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width: 0%;"></div></div>
     </div>
 
@@ -146,7 +138,7 @@
             <summary class="main-summary">【新手報到】啟程點</summary>
             <div class="details-body">
                 <span class="task-target">📣 任務目標</span>
-                <div style="margin-bottom: 15px;">- 確認已詳閱入職規範內容<br>- 確保理解冒險指南與鍛造秘笈</div>
+                <div style="margin-bottom: 15px;">- 確認已詳閱入職規範相關內容<br>- 確保理解冒險指南與鍛造秘笈</div>
                 <label class="check-item"><input type="checkbox" id="chk-guide"> 我已詳閱「📜 冒險指南」</label>
                 <label class="check-item"><input type="checkbox" id="chk-forge"> 我已詳閱「🏹 鍛造秘笈」</label>
                 <button class="btn-confirm" id="btn-trial-1" onclick="checkTrial1(event)">✓ 完成新手報到</button>
@@ -157,7 +149,7 @@
             <summary class="main-summary">【裝備強化】鑑定所</summary>
             <div class="details-body">
                 <span class="task-target">📣 任務目標</span>
-                <div style="margin-bottom: 15px;">- 上傳入職五大必備文件<br>- 確實填寫預計日期並追蹤</div>
+                <div style="margin-bottom: 15px;">- 上傳入職五大必備文件<br>- 確實填寫預計日期並進行追蹤</div>
                 <label class="check-item"><input type="checkbox" class="chk-trial3"> 經認證醫療機構 - 勞工體格檢查報告</label>
                 <label class="check-item"><input type="checkbox" class="chk-trial3"> 經認證醫療機構 - 食品從業人員體檢報告</label>
 
@@ -180,7 +172,7 @@
             <summary class="main-summary">【最終考驗】報到日</summary>
             <div class="details-body">
                 <span class="task-target">📣 任務目標</span>
-                <div style="margin-bottom: 15px;">- 完成勞工名卡資料填寫<br>- 查看並正式簽署契約</div>
+                <div style="margin-bottom: 15px;">- 完成勞工名卡詳細資料填寫<br>- 查看並正式簽署勞動契約書</div>
                 <a href="https://mys0819.github.io/LCS1/" target="_blank" class="external-link">🔗 開啟勞工名卡填寫表單</a>
                 <button class="btn-confirm" id="btn-trial-5" onclick="GameEngine.completeTrial(event, 5)">✓ 完成最終考驗</button>
             </div>
@@ -190,7 +182,7 @@
             <summary class="main-summary">【完成試煉】決斷區</summary>
             <div class="details-body">
                 <span class="task-target">📣 任務目標</span>
-                <div style="margin-bottom: 15px;">- 通過人資最後資格審核<br>- 正式踏入榮耀殿堂</div>
+                <div style="margin-bottom: 15px;">- 通過人資最後資格審核後前進<br>- 正式踏入榮耀殿堂</div>
                 <button class="btn-confirm" id="btn-trial-6" style="color:#fbbf24; border-color:#fbbf24;" onclick="GameEngine.completeTrial(event, 6)">👑 迎接最終榮耀</button>
             </div>
         </details>
@@ -198,7 +190,7 @@
 
     <footer class="footer">
         <img src="assets/MYs_logo_去背.png" alt="MYs Logo" class="footer-logo">
-        © 2026 MYs System
+        © 2026 MYs System - b1.0.0-03-02
     </footer>
 
     <script>
@@ -209,8 +201,8 @@
             document.querySelectorAll('.dyn-type').forEach(el => el.innerText = d.type);
             document.querySelectorAll('.dyn-name').forEach(el => el.innerText = d.userName);
         }
-        window.addEventListener('load', () => { applyData(fetchedData); GameEngine.init(); });
-        function checkTrial1(e) { if (!document.getElementById('chk-guide').checked) { alert("⚠️ 請先勾選確認！"); return; } GameEngine.completeTrial(e, 1); }
+        window.onload = () => { applyData(fetchedData); GameEngine.init(); };
+        function checkTrial1(e) { if (!document.getElementById('chk-guide').checked) { alert("⚠️ 勇者請注意：必須勾選確認！"); return; } GameEngine.completeTrial(e, 1); }
         function checkTrial3(e) { const chks = document.querySelectorAll('.chk-trial3'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 文件必須勾選完成！"); return; } GameEngine.completeTrial(e, 3); }
     </script>
 </body>
