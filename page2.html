@@ -75,23 +75,29 @@
             </summary>
             <div class="details-body">
                 <strong style="display: block; margin-bottom: 8px;">📹 iPhone備忘錄掃描操作示範</strong>
-                <video controls style="width:100%; border-radius: 8px;">
-                    <source src="assets/ios掃描範例.mp4" type="video/mp4">
-                </video>
-
+                <figure class="sample-box" style="padding: 5px;">
+                    <video controls preload="metadata" style="max-width: 100%; border-radius: 4px; display: block;">
+                        <source src="assets/ios掃描範例.mp4" type="video/mp4">
+                    </video>
+                </figure>
+                
                 <div style="margin: 20px 0 10px; font-weight: bold; color: #4ade80;">✅ 以下為正確範例對照</div>
                 <div class="horizontal-scroll">
                     <figure class="sample-box" onclick="zoomImg(this)">
-                        <img src="assets/體檢報告範本.jpg">
-                        <figcaption>✅ 正確規格範本</figcaption>
+                        <img class="sample-img" src="assets/體檢報告範本.jpg">
+                        <figcaption class="sample-cap">✅ 正確規格-體檢報告規格</figcaption>
+                    </figure>
+                    <figure class="sample-box" onclick="zoomImg(this)">
+                        <img class="sample-img" src="assets/身分證範本-正面.jpg">
+                        <figcaption class="sample-cap">✅ 正確規格-身分證正面</figcaption>
                     </figure>
                 </div>
 
                 <div style="margin: 20px 0 10px; font-weight: bold; color: #ff8a8a;">❌ 以下為錯誤範例對照</div>
                 <div class="horizontal-scroll">
                     <figure class="sample-box" onclick="zoomImg(this)">
-                        <img src="assets/錯誤範例-1.jpg">
-                        <figcaption>❌ 錯誤範例-文字模糊</figcaption>
+                        <img class="sample-img" src="assets/錯誤範例-1.jpg">
+                        <figcaption class="sample-cap">❌ 錯誤範例-文字模糊</figcaption>
                     </figure>
                 </div>
             </div>
@@ -100,7 +106,7 @@
 
     <footer class="footer">
         <img src="assets/MYs_logo_去背.png" alt="MYs Logo" class="footer-logo">
-        © 2026 MYs System
+        © 2026 MYs System - b1.0.0-03-02
     </footer>
 
     <script>
