@@ -17,8 +17,8 @@ const GameEngine = {
         examDateLocked: false,
         resultDate: null,    
         resultDateLocked: false,
-        bankDate: null,          /* 🌟 新增：決斷區銀行日期狀態 */
-        bankDateLocked: false,   /* 🌟 新增：決斷區銀行日期鎖定狀態 */
+        bankDate: null,
+        bankDateLocked: false,
         appointmentTime: "2026-03-09 10:00", 
         appointmentLocation: "等待公會發布..."
     },
@@ -43,12 +43,12 @@ const GameEngine = {
     },
 
     trialsData: {
-        1: { baseProg: 10, loc: '🏰 登錄公會', scoreGain: 5 },
-        2: { baseProg: 25, loc: '📁 裝備盤點', scoreGain: 5 },
-        3: { baseProg: 40, loc: '🛡️ 裝備鑑定所', scoreGain: 10 },
-        4: { baseProg: 60, loc: '🎒 出征準備營', scoreGain: 10 },
-        5: { baseProg: 80, loc: '💼 契約祭壇', scoreGain: 10 },
-        6: { baseProg: 90, loc: '👑 榮耀殿堂', scoreGain: 10 }
+        1: { progGain: 16, loc: '🏰 登錄公會', scoreGain: 16 },
+        2: { progGain: 16, loc: '📁 裝備盤點', scoreGain: 16 },
+        3: { progGain: 21, loc: '🛡️ 裝備鑑定所', scoreGain: 21 },
+        4: { progGain: 16, loc: '🎒 出征準備營', scoreGain: 16 },
+        5: { progGain: 14, loc: '💼 契約祭壇', scoreGain: 16 },
+        6: { progGain: 0,  loc: '👑 榮耀殿堂', scoreGain: 0 }
     },
 
     init() {
@@ -58,6 +58,11 @@ const GameEngine = {
         } catch (e) { localStorage.removeItem('hero_progress'); }
         this.injectGlobalCSS();
         setTimeout(() => { this.updateUI(); }, 50);
+
+        // 🌟 隱藏彩蛋：加上 ?delay=1 網址參數，直接觸發奪命連環閃警告！
+        if (window.location.search.includes('delay=1')) {
+            setTimeout(() => this.showDelayWarning(), 500);
+        }
     },
 
     injectGlobalCSS() {
@@ -75,7 +80,6 @@ const GameEngine = {
                 font-weight: bold; font-size: 28px; text-shadow: 0 0 10px rgba(251,191,36,0.8);
                 z-index: 10000; animation: floatUp 1.5s forwards;
             }
-            /* 🎯 強化閃爍特效：放大到 1.3倍，高光轉白色，四周爆出金色光暈 */
             @keyframes shinyUpdate {
                 0% { filter: brightness(1); transform: scale(1); color: inherit; }
                 40% { filter: brightness(2); transform: scale(1.3); color: #ffffff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24, 0 0 45px #fbbf24; }
@@ -95,7 +99,7 @@ const GameEngine = {
         document.head.appendChild(style);
     },
 
-    // 🌟 新增：針對單一特定元素進行閃爍特效，不再全域發光
+    // 🌟 針對單一特定元素進行閃爍特效
     flashElement(id) {
         const el = document.getElementById(id);
         if (el) {
@@ -105,7 +109,7 @@ const GameEngine = {
         }
     },
 
-    // 🌟 新增：主線防具與奇遇武器的專屬升級邏輯
+    // 🌟 主線防具與奇遇武器的專屬升級邏輯 (武器嚴格從頭升起)
     upgradeArmor() {
         let currentArmor = this.state.items.find(item => this.armorPath.includes(item));
         if (currentArmor) {
@@ -129,6 +133,25 @@ const GameEngine = {
         return false;
     },
 
+    // 🌟 延宕奪命連環閃警告動畫
+    showDelayWarning() {
+        if(document.getElementById('delay-warning-overlay')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'delay-warning-overlay';
+        overlay.innerHTML = `<div class="warning-icon">⚠️ 警告</div><div class="warning-text">進度延宕，冒險積分持續流失中..</div>`;
+        document.body.appendChild(overlay);
+        
+        void overlay.offsetWidth;
+        overlay.classList.add('active');
+        
+        setTimeout(() => { overlay.querySelector('.warning-text').classList.add('show'); }, 1500); 
+        
+        overlay.onclick = () => {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 300);
+        };
+    },
+
     // 💰 解鎖機制 (大摺疊、小摺疊、隱藏武器、防具彩蛋)
     unlock(event, id, action) {
         if (this.state.achievements.includes(id)) return;
@@ -136,7 +159,7 @@ const GameEngine = {
         let scoreGain = 0;
         let toastMsg = "";
         let alertMsg = "";
-        let doFlashItem = false; // 是否要閃爍道具欄
+        let doFlashItem = false; 
         
         if (action === 'large_fold') {
             scoreGain = 2;
@@ -150,9 +173,9 @@ const GameEngine = {
         } else if (action === 'explore_armor') {
             scoreGain = 1;
             toastMsg = `✨ 防具升級，冒險積分+${scoreGain}`;
-            if (this.upgradeArmor()) doFlashItem = true; // 觸發一次防具升級
+            if (this.upgradeArmor()) doFlashItem = true; 
         } else if (action === 'random_weapon') {
-            scoreGain = 3;
+            scoreGain = 1; 
             const weapons = ['🗡️ 精鋼短劍', '🏹 獵人短弓', '🔱 鐵尖長槍'];
             const w = weapons[Math.floor(Math.random() * weapons.length)];
             this.state.weaponType = w;
@@ -172,13 +195,12 @@ const GameEngine = {
             if (toastMsg) this.showToast(toastMsg);
             this.updateUI();
             
-            // 🎯 精準控制誰該發光
             if (scoreGain > 0 && action !== 'random_weapon') {
                 this.flashElement('score-text');
             }
             if (doFlashItem) {
-                this.flashElement('item-text'); // 道具閃爍
-                this.flashElement('rank-name'); // 戰力閃爍
+                this.flashElement('item-text'); 
+                this.flashElement('rank-name'); 
             }
         }, 1000);
     },
@@ -204,7 +226,7 @@ const GameEngine = {
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 500);
-        }, 3000); // 🎯 通知時間從 4 秒縮短為 3 秒
+        }, 3000); 
     },
 
     save() { localStorage.setItem('hero_progress', JSON.stringify(this.state)); },
@@ -214,7 +236,6 @@ const GameEngine = {
         const rEl = document.getElementById('rank-text');
         const sEl = document.getElementById('status-tag');
         
-        // 🎯 將需要獨立閃爍的部分加上專屬 ID
         if (rEl) rEl.innerHTML = `<span style="color:#fbbf24;">戰力：</span><span id="rank-name">${rank.title}</span>　｜　<span style="color:#fbbf24;">關卡：</span><span id="loc-text">${this.state.location}</span>`;
         if (sEl) sEl.innerHTML = `<span style="color:#8ab4f8;">道具：</span><span id="item-text">${this.state.items.join(' ')}</span>　｜　<span style="color:#8ab4f8;">狀態：</span><span id="dyn-status">${this.state.status}</span>`;
         
@@ -223,8 +244,16 @@ const GameEngine = {
         const scoreFill = document.getElementById('score-fill');
         if (scoreFill) scoreFill.style.width = Math.min(this.state.score, 100) + "%";
 
-        const baseProg = this.state.currentTrial > 0 ? this.trialsData[this.state.currentTrial].baseProg : 0;
-        const currentProg = Math.min(100, baseProg + (this.state.achievements.length * 2));
+        // 🌟 逼死強迫症：非整數進度條計算 (83% 主線 + 17% 隱藏)
+        let currentProg = 0;
+        for(let i=1; i<=this.state.currentTrial; i++) {
+            if(i <= 5) currentProg += this.trialsData[i].progGain;
+        }
+        if(this.state.achievements.includes('faq_main')) currentProg += 6;
+        if(this.state.achievements.includes('onboard_main')) currentProg += 6;
+        if(this.state.achievements.includes('pg2-m-1')) currentProg += 5;
+        currentProg = Math.min(100, currentProg);
+
         const progVal = document.getElementById('prog-val');
         if (progVal) progVal.innerText = currentProg + "%";
         const progFill = document.getElementById('prog-fill');
@@ -249,7 +278,6 @@ const GameEngine = {
             d2.value = this.state.resultDate || "";
             if (this.state.resultDateLocked) { d2.disabled = true; b2.innerText = "已鎖定"; b2.disabled = true; b2.style.opacity = "0.5"; }
         }
-        // 🌟 新增：決斷區銀行辦理日期控制
         const d3 = document.getElementById('input-bank-date');
         const b3 = document.getElementById('btn-lock-bank');
         if (d3 && b3) {
@@ -263,7 +291,6 @@ const GameEngine = {
         const val = document.getElementById(id).value;
         if (!val) { alert("請先選擇日期！"); return; }
         
-        // 🎯 點擊瞬間防呆，雙重確認後死鎖按鈕
         const confirmLock = confirm("鎖定就不能更改了喔，確定要鎖定嗎？");
         if (!confirmLock) return;
 
@@ -273,7 +300,6 @@ const GameEngine = {
         
         this.save(); 
         this.updateUI();
-        // 🎯 移除多餘的 "已鎖定！無法再次修改。" 第二層提示，讓體驗更順暢
     },
 
     requestChange() {
@@ -289,7 +315,7 @@ const GameEngine = {
         const now = new Date();
         const aptDate = new Date(this.state.appointmentTime);
         const openTime = new Date(aptDate.getFullYear(), aptDate.getMonth(), aptDate.getDate(), 8, 0, 0);
-        if (now < openTime) return { can: false, reason: `⚠️ 請於報到日 (${aptDate.toLocaleDateString()}) 08:00 後操作。` };
+        if (now < openTime) return { can: false, reason: `⚠️ 營地大門深鎖，請於報到日 (${aptDate.toLocaleDateString()}) 08:00 後再來。` };
         return { can: true };
     },
 
@@ -302,7 +328,14 @@ const GameEngine = {
         this.state.location = tData.loc;
         this.state.score += tData.scoreGain;
         
-        // 🎯 過關硬性升級判定：若防具或武器有進階，觸發更新與閃爍
+        // 🌟 武器嘲諷判定：第 6 關身上還是沒武器
+        if (trialNum === 6) {
+            const hasWeapon = this.state.items.some(item => Object.keys(this.weaponPaths).includes(item) || Object.values(this.weaponPaths).includes(item) || ['👑 王者之聖劍', '☄️ 破曉流星弓', '🐉 滅世龍吟槍'].includes(item));
+            if (!hasWeapon) {
+                alert("📝 系統判定：\n勇者雖已通關，但未詳閱《鍛造秘笈》，\n仍全程赤手空拳完成試煉...敬佩！敬佩！");
+            }
+        }
+        
         let doFlashItem = false;
         if (this.upgradeArmor()) doFlashItem = true;
         if (this.upgradeWeapon()) doFlashItem = true;
@@ -310,33 +343,63 @@ const GameEngine = {
         this.save(); 
         this.updateUI();
 
-        // 🎯 過關精準閃爍
         if (doFlashItem) this.flashElement('item-text');
         this.flashElement('loc-text');
         this.flashElement('prog-val');
         this.flashElement('score-text');
+
+        // 🌟 通用過關通知區分
+        if(trialNum === 3) {
+            this.showToast('📣 此階段任務已完成，請稍待鑑定！');
+        } else {
+            this.showToast('📣 此階段任務已完成，請繼續前進！');
+        }
     },
 
     updateButtonStyles() {
+        const lockedTexts = {
+            1: "🔒 啟程點・已封印",
+            2: "🔒 行囊區・已封印",
+            3: "⏳ 鑑定所・審核中",
+            4: "🔒 前線營・已就緒",
+            5: "📜 誓約日・已締約",
+            6: "👑 聖殿區・已加冕"
+        };
+        
         const trials = [1, 2, 3, 4, 5, 6];
         trials.forEach(n => {
             const btn = document.getElementById(`btn-trial-${n}`);
-            if (!btn) return;
-            if (this.state.currentTrial >= n) {
-                btn.disabled = true;
-                btn.innerText = n === 3 ? "📝 已提交裝備" : n === 6 ? "👑 已完成榮耀" : "✓ 已完成試煉";
-                
-                // 🎯 鎖定該關卡內所有的 checkbox 與輸入框
-                const detailsBlock = btn.closest('details');
-                if (detailsBlock) {
-                    const inputs = detailsBlock.querySelectorAll('input');
-                    inputs.forEach(input => {
-                        input.disabled = true;
-                        if(input.type === 'checkbox' || input.type === 'radio') {
-                            input.style.opacity = "0.5";
-                            input.style.cursor = "not-allowed";
-                        }
-                    });
+            const detailsBlock = document.getElementById(`detail-trial-${n}`);
+            
+            if (btn) {
+                if (this.state.currentTrial >= n) {
+                    btn.disabled = true;
+                    btn.innerText = lockedTexts[n];
+                    
+                    if (detailsBlock) {
+                        const inputs = detailsBlock.querySelectorAll('input');
+                        inputs.forEach(input => {
+                            input.disabled = true;
+                            if(input.type === 'checkbox' || input.type === 'radio') {
+                                input.style.opacity = "0.5";
+                                input.style.cursor = "not-allowed";
+                            }
+                        });
+                    }
+                }
+            }
+            
+            // 🌟 關卡順序防偷跑解鎖邏輯
+            if (detailsBlock) {
+                if (n === 1) {
+                    detailsBlock.classList.remove('locked-details');
+                } else {
+                    if (this.state.currentTrial >= n - 1) {
+                        detailsBlock.classList.remove('locked-details');
+                    } else {
+                        detailsBlock.classList.add('locked-details');
+                        detailsBlock.removeAttribute('open'); // 強制關閉並鎖定
+                    }
                 }
             }
         });
