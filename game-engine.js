@@ -43,13 +43,14 @@ const GameEngine = {
         '🔱 鐵尖長槍': '🔱 鋼鐵戰矛', '🔱 鋼鐵戰矛': '🔱 破陣重矛', '🔱 破陣重矛': '🔱 龍膽銀槍', '🔱 龍膽銀槍': '🐉 滅世龍吟槍'
     },
 
+    // 🌟 重新分配進度條：前五關共 71%，第六關 12%，總合 83%
     trialsData: {
-        1: { progGain: 16, loc: '🏰 登錄公會', scoreGain: 16 },
-        2: { progGain: 16, loc: '📁 裝備盤點', scoreGain: 16 },
-        3: { progGain: 21, loc: '🛡️ 裝備鑑定所', scoreGain: 21 },
-        4: { progGain: 16, loc: '🎒 出征準備營', scoreGain: 16 },
-        5: { progGain: 14, loc: '💼 契約祭壇', scoreGain: 16 }, /* 第五關分數已拆至 checkbox */
-        6: { progGain: 0,  loc: '👑 榮耀殿堂', scoreGain: 0 }
+        1: { progGain: 14, loc: '🏰 登錄公會', scoreGain: 16 },
+        2: { progGain: 14, loc: '📁 裝備盤點', scoreGain: 16 },
+        3: { progGain: 17, loc: '🛡️ 裝備鑑定所', scoreGain: 21 },
+        4: { progGain: 13, loc: '🎒 出征準備營', scoreGain: 16 },
+        5: { progGain: 13, loc: '💼 契約祭壇', scoreGain: 16 }, /* 第五關分數已拆至 checkbox */
+        6: { progGain: 12, loc: '👑 榮耀殿堂', scoreGain: 0 }
     },
 
     init() {
@@ -266,10 +267,10 @@ const GameEngine = {
         const scoreFill = document.getElementById('score-fill');
         if (scoreFill) scoreFill.style.width = Math.min(this.state.score, 100) + "%";
 
-        // 🌟 逼死強迫症：非整數進度條計算 (83% 主線 + 17% 隱藏)
+        // 🌟 逼死強迫症：非整數進度條計算 (含第六關才會滿100%)
         let currentProg = 0;
         for(let i=1; i<=this.state.currentTrial; i++) {
-            if(i <= 5) currentProg += this.trialsData[i].progGain;
+            if(i <= 6) currentProg += this.trialsData[i].progGain;
         }
         if(this.state.achievements.includes('faq_main')) currentProg += 6;
         if(this.state.achievements.includes('onboard_main')) currentProg += 6;
@@ -369,10 +370,9 @@ const GameEngine = {
         this.updateButtonStyles(); 
 
         if (trialNum === 6) {
-            // 🌟 拔除 Toast，改為 1.5 秒後直接進入大結局
+            // 🌟 拔除 Toast，改為 1.5 秒後直接進入大結局 (煙火動畫)
             setTimeout(() => {
                 this.showFinalAchievement();
-                // 仍需更新裝備以便顯示
                 if (this.upgradeArmor()) {}
                 if (this.upgradeWeapon()) {}
                 this.save(); 
@@ -412,7 +412,7 @@ const GameEngine = {
         // 抓取完整稱號文字 (A級 菁英玩家)
         const fullRankTitle = rank.title.replace(/.*?([A-ZSS]+級.*)/, '$1');
 
-        // 抓取完成度 %
+        // 抓取完成度 % (此時已包含第六關的 12%)
         const currentProg = document.getElementById('prog-val').innerText;
 
         // 🌟 更新版評價文字庫
@@ -430,10 +430,15 @@ const GameEngine = {
         const hasWeapon = !!weaponItem;
         let mockeryHTML = !hasWeapon ? `<div class="fade-in-row mockery-text" style="animation: fadeUpIn 0.8s forwards 3.3s;">📝 系統額外判定：<br>勇者雖已通關，但未詳閱《鍛造秘笈》，<br>仍全程赤手空拳完成試煉...敬佩！敬佩！</div>` : "";
 
-        // 1. 放煙火 (3秒)
+        // 1. 放 CSS 粒子煙火 (3秒)
         const fw = document.createElement('div');
         fw.id = 'firework-overlay';
-        fw.innerHTML = `<div class="firework-text">🎆<br>✨ 入職試煉圓滿達成<br>歡迎正式踏入我們的行列！</div>`;
+        fw.innerHTML = `
+            <div class="css-firework fw-1"></div>
+            <div class="css-firework fw-2"></div>
+            <div class="css-firework fw-3"></div>
+            <div class="firework-text">✨ 入職試煉圓滿達成<br>歡迎正式踏入我們的行列！</div>
+        `;
         document.body.appendChild(fw);
         void fw.offsetWidth;
         fw.classList.add('active');
