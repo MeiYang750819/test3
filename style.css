@@ -160,7 +160,7 @@ details {
   transition: all 0.3s ease;
 }
 
-/* 🌟 新增：關卡鎖定時的防偷跑視覺 */
+/* 🌟 關卡鎖定時的防偷跑視覺 */
 .locked-details { 
     pointer-events: none; 
     opacity: 0.4; 
@@ -355,16 +355,16 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
     100% { opacity: 0; transform: translateY(-60px) scale(1); }
 }
 
-/* 頂部文字與數值的超級晉升閃爍特效 */
+/* 🎯 強化閃爍特效 (溫和降載版)：放大 1.2 倍，光暈集中 */
 .rank-flash {
-    animation: superGlowText 1.5s ease-in-out forwards;
+    animation: superGlowText 1s ease-in-out forwards;
     display: inline-block; /* 確保 transform 放大有作用 */
 }
 
 @keyframes superGlowText {
     0% { text-shadow: none; transform: scale(1); color: inherit; }
-    30% { text-shadow: 0 0 20px #fbbf24, 0 0 40px #fbbf24, 0 0 60px #ffffff; transform: scale(1.2); color: #ffffff; }
-    70% { text-shadow: 0 0 20px #fbbf24, 0 0 40px #fbbf24, 0 0 60px #ffffff; transform: scale(1.2); color: #ffffff; }
+    40% { text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24; transform: scale(1.2); color: #ffffff; }
+    60% { text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24; transform: scale(1.2); color: #ffffff; }
     100% { text-shadow: none; transform: scale(1); color: inherit; }
 }
 
@@ -390,8 +390,9 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
     margin-bottom: 15px; 
     gap: 10px; 
 }
-.date-row input[type="date"] { 
-    background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; flex: 1; outline: none;
+/* 🌟 修正日期鎖定後的樣式 */
+.date-row input { 
+    background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; flex: 1; outline: none; text-align: center; font-family: inherit; font-size: 14px;
 }
 .btn-lock { 
     background: #2d3748; color: #fff; border: 1px solid #4ade80; padding: 8px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; transition: 0.3s;
@@ -415,3 +416,37 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
     50% { opacity: 0; transform: scale(1.5); filter: brightness(2); } 
     100% { opacity: 1; transform: scale(1); filter: brightness(1); } 
 }
+
+/* 🌟 最終大結局煙火與結算面板特效 */
+#firework-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); z-index: 20000; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.5s;
+}
+#firework-overlay.active { opacity: 1; pointer-events: all; }
+.firework-text { font-size: 24px; color: #fbbf24; font-weight: bold; animation: popUp 1s ease-out; text-align: center; line-height: 1.5; padding: 0 20px; }
+@keyframes popUp { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+#final-achievement-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); z-index: 20001; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+}
+#final-achievement-modal.active { display: flex; }
+.achievement-box {
+    background: #1a1a1a; border: 2px solid #fbbf24; border-radius: 12px;
+    padding: 35px 25px; width: 100%; max-width: 400px; text-align: left;
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+}
+.typing-container { text-align: center; font-size: 36px; font-weight: bold; color: #fbbf24; margin-bottom: 30px; height: 50px; display: flex; justify-content: center; gap: 8px; }
+.type-char { opacity: 0; transform: scale(3); text-shadow: 0 0 20px #fbbf24; }
+@keyframes stampIn {
+    0% { opacity: 0; transform: scale(3); }
+    50% { opacity: 1; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); text-shadow: none; }
+}
+.fade-in-row { opacity: 0; transform: translateY(15px); margin-bottom: 12px; font-size: 16px; color: #efefef; }
+@keyframes fadeUpIn { to { opacity: 1; transform: translateY(0); } }
+.eval-text { color: #4ade80; margin-top: 20px; line-height: 1.6; }
+.mockery-text { color: #ef4444; margin-top: 20px; font-weight: bold; border-top: 1px dashed #555; padding-top: 15px; line-height: 1.6; }
