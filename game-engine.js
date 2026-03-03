@@ -65,6 +65,13 @@ const GameEngine = {
         if (window.location.search.includes('delay=1')) {
             setTimeout(() => this.showDelayWarning(), 500);
         }
+
+        // 🌟 成就回顧機制：若已破關，重整網頁時直接顯示結算面板 (不放煙火)
+        if (this.state.currentTrial >= 6) {
+            setTimeout(() => {
+                this.showFinalAchievement(false); // 傳入 false 代表略過煙火
+            }, 800);
+        }
     },
 
     injectGlobalCSS() {
@@ -372,7 +379,7 @@ const GameEngine = {
         if (trialNum === 6) {
             // 🌟 拔除 Toast，改為 1.5 秒後直接進入大結局 (煙火動畫)
             setTimeout(() => {
-                this.showFinalAchievement();
+                this.showFinalAchievement(true); // 傳入 true 代表要放煙火
                 if (this.upgradeArmor()) {}
                 if (this.upgradeWeapon()) {}
                 this.save(); 
@@ -403,8 +410,8 @@ const GameEngine = {
         }
     },
 
-    // 🌟 史詩級大結局演出腳本
-    showFinalAchievement() {
+    // 🌟 史詩級大結局演出腳本 (支援重播模式)
+    showFinalAchievement(withFirework = true) {
         const rank = this.ranks.find(r => this.state.score >= r.min) || this.ranks[this.ranks.length - 1];
         
         // 抓取階級英文字母 (SS, S, A, B, C, D)
@@ -428,55 +435,74 @@ const GameEngine = {
         const finalEquip = [armorItem, weaponItem].filter(Boolean).join(' 、 '); 
 
         const hasWeapon = !!weaponItem;
+        // 🌟 嘲諷顏色調淡 (#ff8a8a)
         let mockeryHTML = !hasWeapon ? `<div class="fade-in-row mockery-text" style="animation: fadeUpIn 0.8s forwards 3.3s;">📝 系統額外判定：<br>勇者雖已通關，但未詳閱《鍛造秘笈》，<br>仍全程赤手空拳完成試煉...敬佩！敬佩！</div>` : "";
 
-        // 1. 放 CSS 粒子煙火 (3秒)
-        const fw = document.createElement('div');
-        fw.id = 'firework-overlay';
-        fw.innerHTML = `
-            <div class="css-firework fw-1"></div>
-            <div class="css-firework fw-2"></div>
-            <div class="css-firework fw-3"></div>
-            <div class="firework-text">✨ 入職試煉圓滿達成<br>歡迎正式踏入我們的行列！</div>
-        `;
-        document.body.appendChild(fw);
-        void fw.offsetWidth;
-        fw.classList.add('active');
-
-        // 2. 煙火結束，浮現結算面板
-        setTimeout(() => {
-            fw.classList.remove('active');
-            setTimeout(() => {
-                fw.remove();
-                
-                const modal = document.createElement('div');
-                modal.id = 'final-achievement-modal';
-                modal.innerHTML = `
-                    <div class="achievement-box">
-                        <div class="typing-container">
-                            <span class="type-char" style="animation: stampIn 0.5s forwards 0s;">評</span>
-                            <span class="type-char" style="animation: stampIn 0.5s forwards 0.4s;">定</span>
-                            <span class="type-char" style="animation: stampIn 0.5s forwards 0.8s;">${rankLetter}</span>
-                            <span class="type-char" style="animation: stampIn 0.5s forwards 1.2s;">級</span>
-                        </div>
-                        <div style="margin-top: 30px;">
-                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 1.8s;"><strong>🏆 最終戰力評級：</strong>${fullRankTitle}</div>
-                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.1s;"><strong>💯 冒險總積分：</strong>${this.state.score} 分</div>
-                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.4s;"><strong>✅ 試煉完成度：</strong>${currentProg}</div>
-                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.7s;"><strong>🛡️ 最終裝備：</strong>${finalEquip}</div>
-                            
-                            <div class="fade-in-row eval-text" style="animation: fadeUpIn 0.8s forwards 3.0s;">
-                                <strong>📜 系統總評：</strong><br>${evalStr}
-                            </div>
-                            ${mockeryHTML}
-                        </div>
+        // 渲染結算面板的 HTML 結構 (綁定點擊背景關閉)
+        const renderModal = () => {
+            if(document.getElementById('final-achievement-modal')) document.getElementById('final-achievement-modal').remove();
+            
+            const modal = document.createElement('div');
+            modal.id = 'final-achievement-modal';
+            modal.innerHTML = `
+                <div class="achievement-box" onclick="event.stopPropagation()">
+                    <div class="close-modal-btn" onclick="document.getElementById('final-achievement-modal').classList.remove('active'); setTimeout(()=>document.getElementById('final-achievement-modal').remove(),300)">✕</div>
+                    <div class="typing-container">
+                        <span class="type-char" style="animation: stampIn 0.5s forwards 0s;">評</span>
+                        <span class="type-char" style="animation: stampIn 0.5s forwards 0.4s;">定</span>
+                        <span class="type-char" style="animation: stampIn 0.5s forwards 0.8s;">${rankLetter}</span>
+                        <span class="type-char" style="animation: stampIn 0.5s forwards 1.2s;">級</span>
                     </div>
-                `;
-                document.body.appendChild(modal);
-                void modal.offsetWidth;
-                modal.classList.add('active');
-            }, 500);
-        }, 3000);
+                    <div style="margin-top: 30px;">
+                        <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 1.8s;"><strong>🏆 最終戰力評級：</strong>${fullRankTitle}</div>
+                        <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.1s;"><strong>💯 冒險總積分：</strong>${this.state.score} 分</div>
+                        <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.4s;"><strong>✅ 試煉完成度：</strong>${currentProg}</div>
+                        <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.7s;"><strong>🛡️ 最終裝備：</strong>${finalEquip}</div>
+                        
+                        <div class="fade-in-row eval-text" style="animation: fadeUpIn 0.8s forwards 3.0s;">
+                            <strong>📜 系統總評：</strong><br>${evalStr}
+                        </div>
+                        ${mockeryHTML}
+                    </div>
+                </div>
+            `;
+            // 點擊黑底也可關閉
+            modal.onclick = () => {
+                modal.classList.remove('active');
+                setTimeout(()=>modal.remove(),300);
+            };
+            
+            document.body.appendChild(modal);
+            void modal.offsetWidth;
+            modal.classList.add('active');
+        };
+
+        if (withFirework) {
+            // 1. 放 CSS 粒子煙火 (停留 3 秒)
+            const fw = document.createElement('div');
+            fw.id = 'firework-overlay';
+            fw.innerHTML = `
+                <div class="css-firework fw-1"></div>
+                <div class="css-firework fw-2"></div>
+                <div class="css-firework fw-3"></div>
+                <div class="firework-text">入職試煉圓滿達成<br>歡迎正式踏入我們的行列</div>
+            `;
+            document.body.appendChild(fw);
+            void fw.offsetWidth;
+            fw.classList.add('active');
+
+            // 2. 煙火結束，浮現結算面板
+            setTimeout(() => {
+                fw.classList.remove('active');
+                setTimeout(() => {
+                    fw.remove();
+                    renderModal();
+                }, 500);
+            }, 3000); // 🌟 煙火維持 3 秒
+        } else {
+            // 無煙火模式 (重新登入時)，直接顯示面板
+            renderModal();
+        }
     },
 
     updateButtonStyles() {
@@ -508,6 +534,13 @@ const GameEngine = {
                                 input.style.cursor = "not-allowed";
                             }
                         });
+                    }
+
+                    // 🌟 若是第六關破關按鈕，賦予「點擊回顧成就」功能
+                    if (n === 6) {
+                        btn.disabled = false; // 解開 disabled 讓它可以被點
+                        btn.style.cursor = "pointer";
+                        btn.onclick = () => { this.showFinalAchievement(false); };
                     }
                 }
             }
