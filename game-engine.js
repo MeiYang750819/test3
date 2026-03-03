@@ -19,7 +19,7 @@ const GameEngine = {
         resultDateLocked: false,
         bankDate: null,
         bankDateLocked: false,
-        appointmentTime: "2026-03-09 10:00", 
+        appointmentTime: "2026-03-01 10:00", /* 🌟 已改為過去時間，方便測試 */
         appointmentLocation: "等待公會發布..."
     },
 
@@ -47,7 +47,7 @@ const GameEngine = {
         2: { progGain: 16, loc: '📁 裝備盤點', scoreGain: 16 },
         3: { progGain: 21, loc: '🛡️ 裝備鑑定所', scoreGain: 21 },
         4: { progGain: 16, loc: '🎒 出征準備營', scoreGain: 16 },
-        5: { progGain: 14, loc: '💼 契約祭壇', scoreGain: 16 },
+        5: { progGain: 14, loc: '💼 契約祭壇', scoreGain: 16 }, /* 這裡的 scoreGain 之後在點擊時拆分處理 */
         6: { progGain: 0,  loc: '👑 榮耀殿堂', scoreGain: 0 }
     },
 
@@ -72,7 +72,7 @@ const GameEngine = {
         style.innerHTML = `
             @keyframes floatUp {
                 0% { opacity: 0; transform: translateY(0) scale(0.5); }
-                20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+                20% { opacity: 1; transform: translateY(-20px) scale(1.15); } /* 🌟 降載放大比例 */
                 100% { opacity: 0; transform: translateY(-60px) scale(1); }
             }
             .floating-text {
@@ -80,10 +80,11 @@ const GameEngine = {
                 font-weight: bold; font-size: 28px; text-shadow: 0 0 10px rgba(251,191,36,0.8);
                 z-index: 10000; animation: floatUp 1.5s forwards;
             }
+            /* 🎯 強化閃爍特效 (降載版)：放大 1.15 倍，光暈縮小 */
             @keyframes shinyUpdate {
                 0% { filter: brightness(1); transform: scale(1); color: inherit; }
-                40% { filter: brightness(2); transform: scale(1.3); color: #ffffff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24, 0 0 45px #fbbf24; }
-                60% { filter: brightness(2); transform: scale(1.3); color: #ffffff; text-shadow: 0 0 15px #fbbf24, 0 0 30px #fbbf24, 0 0 45px #fbbf24; }
+                40% { filter: brightness(1.5); transform: scale(1.15); color: #ffffff; text-shadow: 0 0 8px #fbbf24, 0 0 16px #fbbf24; }
+                60% { filter: brightness(1.5); transform: scale(1.15); color: #ffffff; text-shadow: 0 0 8px #fbbf24, 0 0 16px #fbbf24; }
                 100% { filter: brightness(1); transform: scale(1); color: inherit; }
             }
             .shiny-effect { animation: shinyUpdate 1s ease-in-out; display: inline-block; }
@@ -205,6 +206,22 @@ const GameEngine = {
         }, 1000);
     },
 
+    // 🌟 第五關獨立計分觸發器
+    addTrial5Score(event, id) {
+        if (this.state.achievements.includes(id)) return;
+        
+        let scoreGain = 8;
+        this.createFloatingText(event, `+${scoreGain}`);
+        this.state.achievements.push(id);
+        this.state.score += scoreGain;
+        this.save();
+        
+        setTimeout(() => {
+            this.updateUI();
+            this.flashElement('score-text');
+        }, 1000);
+    },
+
     createFloatingText(e, text) {
         const x = e.clientX || (e.touches && e.touches[0].clientX);
         const y = e.clientY || (e.touches && e.touches[0].clientY);
@@ -313,9 +330,15 @@ const GameEngine = {
     canUnlockTrial5() {
         if (!this.state.appointmentTime || this.state.appointmentTime.includes("等待")) return { can: false, reason: "⚠️ 尚未發布報到時間。" };
         const now = new Date();
-        const aptDate = new Date(this.state.appointmentTime);
-        const openTime = new Date(aptDate.getFullYear(), aptDate.getMonth(), aptDate.getDate(), 8, 0, 0);
-        if (now < openTime) return { can: false, reason: `⚠️ 營地大門深鎖，請於報到日 (${aptDate.toLocaleDateString()}) 08:00 後再來。` };
+        // 🌟 格式化日期提示
+        const aptDateStr = this.state.appointmentTime.replace('/', '-'); 
+        const aptTimeParts = aptDateStr.split(' ');
+        const dateStr = aptTimeParts[0];
+        const timeStr = aptTimeParts[1] || '08:00';
+        
+        const openTime = new Date(`${dateStr}T08:00:00`);
+        
+        if (now < openTime) return { can: false, reason: `⚠️ 營地大門深鎖\n請於 ${dateStr} 08:00 後再來！` };
         return { can: true };
     },
 
@@ -326,7 +349,11 @@ const GameEngine = {
         const tData = this.trialsData[trialNum];
         this.state.currentTrial = trialNum;
         this.state.location = tData.loc;
-        this.state.score += tData.scoreGain;
+        
+        // 🌟 第五關分數已拆分到 checkbox，這裡不再重複加分
+        if (trialNum !== 5) {
+            this.state.score += tData.scoreGain;
+        }
         
         // 🌟 武器嘲諷判定：第 6 關身上還是沒武器
         if (trialNum === 6) {
@@ -346,7 +373,7 @@ const GameEngine = {
         if (doFlashItem) this.flashElement('item-text');
         this.flashElement('loc-text');
         this.flashElement('prog-val');
-        this.flashElement('score-text');
+        if (trialNum !== 5) this.flashElement('score-text');
 
         // 🌟 通用過關通知區分
         if(trialNum === 3) {
