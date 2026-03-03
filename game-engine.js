@@ -19,6 +19,7 @@ const GameEngine = {
         resultDateLocked: false,
         bankDate: null,
         bankDateLocked: false,
+        bankStatus: null, /* 🌟 記錄銀行狀態 */
         appointmentTime: "2026-03-01 10:00", /* 🌟 已改為過去時間，方便測試 */
         appointmentLocation: "等待公會發布..."
     },
@@ -47,7 +48,7 @@ const GameEngine = {
         2: { progGain: 16, loc: '📁 裝備盤點', scoreGain: 16 },
         3: { progGain: 21, loc: '🛡️ 裝備鑑定所', scoreGain: 21 },
         4: { progGain: 16, loc: '🎒 出征準備營', scoreGain: 16 },
-        5: { progGain: 14, loc: '💼 契約祭壇', scoreGain: 16 }, /* 這裡的 scoreGain 之後在點擊時拆分處理 */
+        5: { progGain: 14, loc: '💼 契約祭壇', scoreGain: 16 }, /* 第五關分數已拆至 checkbox */
         6: { progGain: 0,  loc: '👑 榮耀殿堂', scoreGain: 0 }
     },
 
@@ -70,21 +71,10 @@ const GameEngine = {
         const style = document.createElement('style');
         style.id = 'game-fx-style';
         style.innerHTML = `
-            @keyframes floatUp {
-                0% { opacity: 0; transform: translateY(0) scale(0.5); }
-                20% { opacity: 1; transform: translateY(-20px) scale(1.15); } /* 🌟 降載放大比例 */
-                100% { opacity: 0; transform: translateY(-60px) scale(1); }
-            }
-            .floating-text {
-                position: fixed; pointer-events: none; color: #fbbf24;
-                font-weight: bold; font-size: 28px; text-shadow: 0 0 10px rgba(251,191,36,0.8);
-                z-index: 10000; animation: floatUp 1.5s forwards;
-            }
-            /* 🎯 強化閃爍特效 (降載版)：放大 1.15 倍，光暈縮小 */
             @keyframes shinyUpdate {
                 0% { filter: brightness(1); transform: scale(1); color: inherit; }
-                40% { filter: brightness(1.5); transform: scale(1.15); color: #ffffff; text-shadow: 0 0 8px #fbbf24, 0 0 16px #fbbf24; }
-                60% { filter: brightness(1.5); transform: scale(1.15); color: #ffffff; text-shadow: 0 0 8px #fbbf24, 0 0 16px #fbbf24; }
+                40% { filter: brightness(1.5); transform: scale(1.2); color: #ffffff; text-shadow: 0 0 8px #fbbf24, 0 0 16px #fbbf24; }
+                60% { filter: brightness(1.5); transform: scale(1.2); color: #ffffff; text-shadow: 0 0 8px #fbbf24, 0 0 16px #fbbf24; }
                 100% { filter: brightness(1); transform: scale(1); color: inherit; }
             }
             .shiny-effect { animation: shinyUpdate 1s ease-in-out; display: inline-block; }
@@ -110,7 +100,7 @@ const GameEngine = {
         }
     },
 
-    // 🌟 主線防具與奇遇武器的專屬升級邏輯 (武器嚴格從頭升起)
+    // 🌟 主線防具與奇遇武器的專屬升級邏輯
     upgradeArmor() {
         let currentArmor = this.state.items.find(item => this.armorPath.includes(item));
         if (currentArmor) {
@@ -156,7 +146,9 @@ const GameEngine = {
     // 💰 解鎖機制 (大摺疊、小摺疊、隱藏武器、防具彩蛋)
     unlock(event, id, action) {
         if (this.state.achievements.includes(id)) return;
-        
+        this.state.achievements.push(id); // 立即鎖定避免重複點擊
+        this.save();
+
         let scoreGain = 0;
         let toastMsg = "";
         let alertMsg = "";
@@ -174,26 +166,29 @@ const GameEngine = {
         } else if (action === 'explore_armor') {
             scoreGain = 1;
             toastMsg = `✨ 防具升級，冒險積分+${scoreGain}`;
-            if (this.upgradeArmor()) doFlashItem = true; 
         } else if (action === 'random_weapon') {
             scoreGain = 1; 
-            const weapons = ['🗡️ 精鋼短劍', '🏹 獵人短弓', '🔱 鐵尖長槍'];
-            const w = weapons[Math.floor(Math.random() * weapons.length)];
-            this.state.weaponType = w;
-            this.state.items.push(w);
-            toastMsg = `⚔️ 獲得武器：${w}，戰力大幅提升！`;
-            doFlashItem = true;
+            toastMsg = `⚔️ 獲得基礎武器，戰力大幅提升！`;
         }
 
         if (alertMsg) { alert(alertMsg); }
 
         this.createFloatingText(event, `+${scoreGain}`);
-        this.state.achievements.push(id);
-        this.state.score += scoreGain;
-        this.save();
+        if (toastMsg) this.showToast(toastMsg);
         
+        // 🌟 延遲 3 秒結算與閃爍 (等待 Toast 消失)
         setTimeout(() => {
-            if (toastMsg) this.showToast(toastMsg);
+            this.state.score += scoreGain;
+            if (action === 'explore_armor') {
+                if (this.upgradeArmor()) doFlashItem = true;
+            } else if (action === 'random_weapon') {
+                const weapons = ['🗡️ 精鋼短劍', '🏹 獵人短弓', '🔱 鐵尖長槍'];
+                const w = weapons[Math.floor(Math.random() * weapons.length)];
+                this.state.weaponType = w;
+                this.state.items.push(w);
+                doFlashItem = true;
+            }
+            this.save();
             this.updateUI();
             
             if (scoreGain > 0 && action !== 'random_weapon') {
@@ -203,23 +198,26 @@ const GameEngine = {
                 this.flashElement('item-text'); 
                 this.flashElement('rank-name'); 
             }
-        }, 1000);
+        }, 3000);
     },
 
-    // 🌟 第五關獨立計分觸發器
+    // 🌟 第五關獨立計分觸發器 (拆分計分)
     addTrial5Score(event, id) {
         if (this.state.achievements.includes(id)) return;
+        this.state.achievements.push(id);
+        this.save();
         
         let scoreGain = 8;
         this.createFloatingText(event, `+${scoreGain}`);
-        this.state.achievements.push(id);
-        this.state.score += scoreGain;
-        this.save();
+        this.showToast(`📣 填寫完成確認，冒險積分 +${scoreGain}！`);
         
+        // 🌟 延遲 3 秒閃爍
         setTimeout(() => {
+            this.state.score += scoreGain;
+            this.save();
             this.updateUI();
             this.flashElement('score-text');
-        }, 1000);
+        }, 3000);
     },
 
     createFloatingText(e, text) {
@@ -283,24 +281,28 @@ const GameEngine = {
     },
 
     updateDateControls() {
-        const d1 = document.getElementById('input-exam-date');
-        const b1 = document.getElementById('btn-lock-exam');
-        if (d1 && b1) {
-            d1.value = this.state.examDate || "";
-            if (this.state.examDateLocked) { d1.disabled = true; b1.innerText = "已鎖定"; b1.disabled = true; b1.style.opacity = "0.5"; }
-        }
-        const d2 = document.getElementById('input-result-date');
-        const b2 = document.getElementById('btn-lock-result');
-        if (d2 && b2) {
-            d2.value = this.state.resultDate || "";
-            if (this.state.resultDateLocked) { d2.disabled = true; b2.innerText = "已鎖定"; b2.disabled = true; b2.style.opacity = "0.5"; }
-        }
-        const d3 = document.getElementById('input-bank-date');
-        const b3 = document.getElementById('btn-lock-bank');
-        if (d3 && b3) {
-            d3.value = this.state.bankDate || "";
-            if (this.state.bankDateLocked) { d3.disabled = true; b3.innerText = "已鎖定"; b3.disabled = true; b3.style.opacity = "0.5"; }
-        }
+        const dateFields = [
+            { id: 'input-exam-date', btn: 'btn-lock-exam', val: this.state.examDate, locked: this.state.examDateLocked },
+            { id: 'input-result-date', btn: 'btn-lock-result', val: this.state.resultDate, locked: this.state.resultDateLocked },
+            { id: 'input-bank-date', btn: 'btn-lock-bank', val: this.state.bankDate, locked: this.state.bankDateLocked }
+        ];
+
+        dateFields.forEach(field => {
+            const input = document.getElementById(field.id);
+            const btn = document.getElementById(field.btn);
+            if (input && btn) {
+                input.value = field.val || "";
+                if (field.locked) {
+                    input.type = 'text'; // 🌟 鎖定後變形為純文字顯示
+                    input.disabled = true;
+                    btn.innerText = "已鎖定";
+                    btn.disabled = true;
+                    btn.style.opacity = "0.5";
+                } else {
+                    input.type = 'date';
+                }
+            }
+        });
     },
 
     lockDate(type) {
@@ -311,9 +313,16 @@ const GameEngine = {
         const confirmLock = confirm("鎖定就不能更改了喔，確定要鎖定嗎？");
         if (!confirmLock) return;
 
-        if (type === 'exam') { this.state.examDate = val; this.state.examDateLocked = true; }
-        else if (type === 'result') { this.state.resultDate = val; this.state.resultDateLocked = true; }
-        else if (type === 'bank') { this.state.bankDate = val; this.state.bankDateLocked = true; }
+        // 🌟 自動變換日期格式為 XXXX年XX月XX日
+        const parts = val.split('-');
+        let formattedVal = val;
+        if(parts.length === 3) {
+            formattedVal = `${parts[0]}年${parts[1]}月${parts[2]}日`;
+        }
+
+        if (type === 'exam') { this.state.examDate = formattedVal; this.state.examDateLocked = true; }
+        else if (type === 'result') { this.state.resultDate = formattedVal; this.state.resultDateLocked = true; }
+        else if (type === 'bank') { this.state.bankDate = formattedVal; this.state.bankDateLocked = true; }
         
         this.save(); 
         this.updateUI();
@@ -330,11 +339,9 @@ const GameEngine = {
     canUnlockTrial5() {
         if (!this.state.appointmentTime || this.state.appointmentTime.includes("等待")) return { can: false, reason: "⚠️ 尚未發布報到時間。" };
         const now = new Date();
-        // 🌟 格式化日期提示
-        const aptDateStr = this.state.appointmentTime.replace('/', '-'); 
+        const aptDateStr = this.state.appointmentTime.replace(/\//g, '-'); 
         const aptTimeParts = aptDateStr.split(' ');
         const dateStr = aptTimeParts[0];
-        const timeStr = aptTimeParts[1] || '08:00';
         
         const openTime = new Date(`${dateStr}T08:00:00`);
         
@@ -347,40 +354,111 @@ const GameEngine = {
         if (trialNum === 5 && !this.canUnlockTrial5().can) { alert(this.canUnlockTrial5().reason); return; }
         
         const tData = this.trialsData[trialNum];
+        
+        // 🌟 立即更新按鈕狀態與本機資料，防連點
         this.state.currentTrial = trialNum;
         this.state.location = tData.loc;
-        
-        // 🌟 第五關分數已拆分到 checkbox，這裡不再重複加分
-        if (trialNum !== 5) {
-            this.state.score += tData.scoreGain;
-        }
-        
-        // 🌟 武器嘲諷判定：第 6 關身上還是沒武器
-        if (trialNum === 6) {
-            const hasWeapon = this.state.items.some(item => Object.keys(this.weaponPaths).includes(item) || Object.values(this.weaponPaths).includes(item) || ['👑 王者之聖劍', '☄️ 破曉流星弓', '🐉 滅世龍吟槍'].includes(item));
-            if (!hasWeapon) {
-                alert("📝 系統判定：\n勇者雖已通關，但未詳閱《鍛造秘笈》，\n仍全程赤手空拳完成試煉...敬佩！敬佩！");
-            }
-        }
-        
-        let doFlashItem = false;
-        if (this.upgradeArmor()) doFlashItem = true;
-        if (this.upgradeWeapon()) doFlashItem = true;
-
         this.save(); 
-        this.updateUI();
+        this.updateButtonStyles(); 
 
-        if (doFlashItem) this.flashElement('item-text');
-        this.flashElement('loc-text');
-        this.flashElement('prog-val');
-        if (trialNum !== 5) this.flashElement('score-text');
+        let msg = trialNum === 3 ? '📣 此階段任務已完成，請稍待鑑定！' : '📣 此階段任務已完成，請繼續前進！';
+        this.showToast(msg);
 
-        // 🌟 通用過關通知區分
-        if(trialNum === 3) {
-            this.showToast('📣 此階段任務已完成，請稍待鑑定！');
-        } else {
-            this.showToast('📣 此階段任務已完成，請繼續前進！');
-        }
+        // 🌟 延遲 3 秒結算特效
+        setTimeout(() => {
+            if (trialNum !== 5 && trialNum !== 6) {
+                this.state.score += tData.scoreGain;
+            }
+            
+            let doFlashItem = false;
+            if (this.upgradeArmor()) doFlashItem = true;
+            if (this.upgradeWeapon()) doFlashItem = true;
+
+            this.save(); 
+            this.updateUI();
+
+            if (doFlashItem) this.flashElement('item-text');
+            this.flashElement('loc-text');
+            this.flashElement('prog-val');
+            if (trialNum !== 5 && trialNum !== 6) this.flashElement('score-text');
+
+            // 🌟 第六關大結局煙火與結算判斷
+            if (trialNum === 6) {
+                this.showFinalAchievement();
+            }
+        }, 3000);
+    },
+
+    // 🌟 史詩級大結局演出腳本
+    showFinalAchievement() {
+        const rank = this.ranks.find(r => this.state.score >= r.min) || this.ranks[this.ranks.length - 1];
+        
+        // 抓取階級英文字母 (SS, S, A, B, C, D)
+        const rankLetter = rank.title.match(/[A-ZS]+/)?.[0] || 'D';
+        // 抓取完整稱號文字 (A級 菁英玩家)
+        const fullRankTitle = rank.title.replace(/.*?([A-ZSS]+級.*)/, '$1');
+
+        // 抓取完成度 %
+        const currentProg = document.getElementById('prog-val').innerText;
+
+        // 評價文字庫
+        let evalStr = "";
+        if(this.state.score >= 96) evalStr = "無懈可擊的執行力！你的細心與效率令人驚豔，未來的表現值得期待。";
+        else if(this.state.score >= 80) evalStr = "穩健可靠地完成了所有準備。這是一個好的開始，繼續保持這份用心。";
+        else if(this.state.score >= 41) evalStr = "雖然過程有些波折，但總算完成了。未來的任務請務必更加留意細節與時效喔！";
+        else evalStr = "試煉過程充滿驚險。職場如同戰場，請重新調整狀態，拿出更好的表現。";
+
+        // 裝備與嘲諷判定
+        const weaponItem = this.state.items.find(i => Object.keys(this.weaponPaths).includes(i) || Object.values(this.weaponPaths).includes(i) || ['👑 王者之聖劍', '☄️ 破曉流星弓', '🐉 滅世龍吟槍'].includes(i)) || "";
+        const armorItem = this.state.items.find(i => this.armorPath.includes(i)) || "";
+        const finalEquipRaw = [armorItem, weaponItem].filter(Boolean).join(' ');
+        const finalEquip = finalEquipRaw.replace(/[^a-zA-Z\u4e00-\u9fa5\s]/g, '').trim(); // 移除 Emoji
+
+        const hasWeapon = !!weaponItem;
+        let mockeryHTML = !hasWeapon ? `<div class="fade-in-row mockery-text" style="animation: fadeUpIn 0.8s forwards 3.3s;">📝 系統額外判定：<br>勇者雖已通關，但未詳閱《鍛造秘笈》，<br>仍全程赤手空拳完成試煉...敬佩！敬佩！</div>` : "";
+
+        // 1. 放煙火 (3秒)
+        const fw = document.createElement('div');
+        fw.id = 'firework-overlay';
+        fw.innerHTML = `<div class="firework-text">🎆<br>✨ 入職試煉圓滿達成<br>歡迎正式踏入我們的行列！</div>`;
+        document.body.appendChild(fw);
+        void fw.offsetWidth;
+        fw.classList.add('active');
+
+        // 2. 煙火結束，浮現結算面板
+        setTimeout(() => {
+            fw.classList.remove('active');
+            setTimeout(() => {
+                fw.remove();
+                
+                const modal = document.createElement('div');
+                modal.id = 'final-achievement-modal';
+                modal.innerHTML = `
+                    <div class="achievement-box">
+                        <div class="typing-container">
+                            <span class="type-char" style="animation: stampIn 0.5s forwards 0s;">評</span>
+                            <span class="type-char" style="animation: stampIn 0.5s forwards 0.4s;">定</span>
+                            <span class="type-char" style="animation: stampIn 0.5s forwards 0.8s;">${rankLetter}</span>
+                            <span class="type-char" style="animation: stampIn 0.5s forwards 1.2s;">級</span>
+                        </div>
+                        <div style="margin-top: 30px;">
+                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 1.8s;"><strong>🏆 最終戰力評級：</strong>${fullRankTitle}</div>
+                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.1s;"><strong>💯 冒險總積分：</strong>${this.state.score} 分</div>
+                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.4s;"><strong>✅ 試煉完成度：</strong>${currentProg}</div>
+                            <div class="fade-in-row" style="animation: fadeUpIn 0.8s forwards 2.7s;"><strong>🛡️ 最終裝備：</strong>${finalEquip}</div>
+                            
+                            <div class="fade-in-row eval-text" style="animation: fadeUpIn 0.8s forwards 3.0s;">
+                                <strong>📜 系統總評：</strong><br>${evalStr}
+                            </div>
+                            ${mockeryHTML}
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                void modal.offsetWidth;
+                modal.classList.add('active');
+            }, 500);
+        }, 3000);
     },
 
     updateButtonStyles() {
@@ -430,6 +508,24 @@ const GameEngine = {
                 }
             }
         });
+
+        // 🌟 恢復已記錄的特殊 checkbox 狀態
+        if(this.state.achievements.includes('t5_score_1')) {
+            const chk = document.getElementById('chk-t5-1');
+            if (chk) { chk.checked = true; chk.disabled = true; chk.style.opacity = '0.5'; }
+        }
+        if(this.state.achievements.includes('t5_score_2')) {
+            const chk = document.getElementById('chk-t5-2');
+            if (chk) { chk.checked = true; chk.disabled = true; chk.style.opacity = '0.5'; }
+        }
+        if(this.state.bankStatus) {
+            const map = { 'have': 'chk-bank-have', 'process': 'chk-bank-process', 'done': 'chk-bank-done' };
+            const id = map[this.state.bankStatus];
+            if (id) {
+                const el = document.getElementById(id);
+                if (el) { el.checked = true; }
+            }
+        }
     }
 };
 window.addEventListener('load', () => GameEngine.init());
