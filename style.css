@@ -425,8 +425,25 @@ details details { box-shadow: none; margin-bottom: 0; border-radius: 0; border: 
     opacity: 0; pointer-events: none; transition: opacity 0.5s;
 }
 #firework-overlay.active { opacity: 1; pointer-events: all; }
-.firework-text { font-size: 24px; color: #fbbf24; font-weight: bold; animation: popUp 1s ease-out; text-align: center; line-height: 1.5; padding: 0 20px; }
+.firework-text { font-size: 24px; color: #fbbf24; font-weight: bold; animation: popUp 1s ease-out; text-align: center; line-height: 1.5; padding: 0 20px; z-index: 2; }
 @keyframes popUp { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+/* 🌟 CSS 粒子煙火特效 */
+@keyframes bang {
+  0% { box-shadow: 0 0 transparent; }
+  50% { box-shadow: -80px -80px #fbbf24, 80px -80px #4ade80, -80px 80px #8ab4f8, 80px 80px #ef4444, 0 -120px #fbbf24, 0 120px #4ade80, -120px 0 #8ab4f8, 120px 0 #ef4444, -60px -120px #fbbf24, 60px -120px #4ade80, -60px 120px #8ab4f8, 60px 120px #ef4444, -120px -60px #fbbf24, 120px -60px #4ade80, -120px 60px #8ab4f8, 120px 60px #ef4444; opacity: 1; }
+  100% { box-shadow: -100px -100px transparent, 100px -100px transparent, -100px 100px transparent, 100px 100px transparent, 0 -150px transparent, 0 150px transparent, -150px 0 transparent, 150px 0 transparent, -80px -150px transparent, 80px -150px transparent, -80px 150px transparent, 80px 150px transparent, -150px -80px transparent, 150px -80px transparent, -150px 80px transparent, 150px 80px transparent; opacity: 0; }
+}
+.css-firework {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: bang 1.2s ease-out infinite;
+    z-index: 1; 
+}
+.fw-1 { top: 30%; left: 30%; animation-delay: 0s; }
+.fw-2 { top: 60%; left: 70%; animation-delay: 0.3s; }
+.fw-3 { top: 40%; left: 60%; animation-delay: 0.6s; }
 
 #final-achievement-modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
