@@ -146,7 +146,7 @@ const GameEngine = {
     // 💰 解鎖機制 (大摺疊、小摺疊、隱藏武器、防具彩蛋)
     unlock(event, id, action) {
         if (this.state.achievements.includes(id)) return;
-        this.state.achievements.push(id); // 立即鎖定避免重複點擊
+        this.state.achievements.push(id); 
         this.save();
 
         let scoreGain = 0;
@@ -176,7 +176,9 @@ const GameEngine = {
         this.createFloatingText(event, `+${scoreGain}`);
         if (toastMsg) this.showToast(toastMsg);
         
-        // 🌟 延遲 3 秒結算與閃爍 (等待 Toast 消失)
+        // 🌟 延遲優化：有通知等 3 秒，沒通知等 1 秒
+        let delayTime = toastMsg ? 3000 : 1000;
+
         setTimeout(() => {
             this.state.score += scoreGain;
             if (action === 'explore_armor') {
@@ -198,26 +200,31 @@ const GameEngine = {
                 this.flashElement('item-text'); 
                 this.flashElement('rank-name'); 
             }
-        }, 3000);
+        }, delayTime);
     },
 
-    // 🌟 第五關獨立計分觸發器 (拆分計分)
-    addTrial5Score(event, id) {
-        if (this.state.achievements.includes(id)) return;
-        this.state.achievements.push(id);
-        this.save();
-        
+    // 🌟 第五關可自由取消的獨立計分觸發器
+    toggleTrial5Score(event, id) {
+        const isChecked = event.target.checked;
         let scoreGain = 8;
-        this.createFloatingText(event, `+${scoreGain}`);
-        this.showToast(`📣 填寫完成確認，冒險積分 +${scoreGain}！`);
         
-        // 🌟 延遲 3 秒閃爍
-        setTimeout(() => {
+        if (isChecked && !this.state.achievements.includes(id)) {
+            this.createFloatingText(event, `+${scoreGain}`);
+            this.state.achievements.push(id);
             this.state.score += scoreGain;
+            this.save();
+            setTimeout(() => {
+                this.updateUI();
+                this.flashElement('score-text');
+            }, 1000); // 無通知，1秒後結算閃爍
+        } else if (!isChecked && this.state.achievements.includes(id)) {
+            // 反悔取消打勾時，扣回分數
+            this.state.achievements = this.state.achievements.filter(a => a !== id);
+            this.state.score -= scoreGain;
             this.save();
             this.updateUI();
             this.flashElement('score-text');
-        }, 3000);
+        }
     },
 
     createFloatingText(e, text) {
@@ -361,32 +368,39 @@ const GameEngine = {
         this.save(); 
         this.updateButtonStyles(); 
 
-        let msg = trialNum === 3 ? '📣 此階段任務已完成，請稍待鑑定！' : '📣 此階段任務已完成，請繼續前進！';
-        this.showToast(msg);
-
-        // 🌟 延遲 3 秒結算特效
-        setTimeout(() => {
-            if (trialNum !== 5 && trialNum !== 6) {
-                this.state.score += tData.scoreGain;
-            }
-            
-            let doFlashItem = false;
-            if (this.upgradeArmor()) doFlashItem = true;
-            if (this.upgradeWeapon()) doFlashItem = true;
-
-            this.save(); 
-            this.updateUI();
-
-            if (doFlashItem) this.flashElement('item-text');
-            this.flashElement('loc-text');
-            this.flashElement('prog-val');
-            if (trialNum !== 5 && trialNum !== 6) this.flashElement('score-text');
-
-            // 🌟 第六關大結局煙火與結算判斷
-            if (trialNum === 6) {
+        if (trialNum === 6) {
+            // 🌟 拔除 Toast，改為 1.5 秒後直接進入大結局
+            setTimeout(() => {
                 this.showFinalAchievement();
-            }
-        }, 3000);
+                // 仍需更新裝備以便顯示
+                if (this.upgradeArmor()) {}
+                if (this.upgradeWeapon()) {}
+                this.save(); 
+                this.updateUI();
+            }, 1500);
+        } else {
+            let msg = trialNum === 3 ? '📣 此階段任務已完成，請稍待鑑定！' : '📣 此階段任務已完成，請繼續前進！';
+            this.showToast(msg);
+
+            // 🌟 延遲 3 秒結算特效 (等待 Toast 消失)
+            setTimeout(() => {
+                if (trialNum !== 5) {
+                    this.state.score += tData.scoreGain;
+                }
+                
+                let doFlashItem = false;
+                if (this.upgradeArmor()) doFlashItem = true;
+                if (this.upgradeWeapon()) doFlashItem = true;
+
+                this.save(); 
+                this.updateUI();
+
+                if (doFlashItem) this.flashElement('item-text');
+                this.flashElement('loc-text');
+                this.flashElement('prog-val');
+                if (trialNum !== 5) this.flashElement('score-text');
+            }, 3000);
+        }
     },
 
     // 🌟 史詩級大結局演出腳本
@@ -401,18 +415,17 @@ const GameEngine = {
         // 抓取完成度 %
         const currentProg = document.getElementById('prog-val').innerText;
 
-        // 評價文字庫
+        // 🌟 更新版評價文字庫
         let evalStr = "";
-        if(this.state.score >= 96) evalStr = "無懈可擊的執行力！你的細心與效率令人驚豔，未來的表現值得期待。";
-        else if(this.state.score >= 80) evalStr = "穩健可靠地完成了所有準備。這是一個好的開始，繼續保持這份用心。";
-        else if(this.state.score >= 41) evalStr = "雖然過程有些波折，但總算完成了。未來的任務請務必更加留意細節與時效喔！";
-        else evalStr = "試煉過程充滿驚險。職場如同戰場，請重新調整狀態，拿出更好的表現。";
+        if(this.state.score >= 96) evalStr = "無懈可擊的執行力！<br>積極度與效率令人驚豔，未來的表現值得期待！";
+        else if(this.state.score >= 80) evalStr = "穩健可靠地完成了所有準備，<br>這是一個好的開始，繼續保持這份用心！";
+        else if(this.state.score >= 41) evalStr = "雖然過程有些波折，但總算完成試煉，<br>未來的任務請務必更加留意細節與時效喔！";
+        else evalStr = "試煉過程充滿驚險，職場如同戰場，<br>請重新調整狀態，拿出更好的表現！";
 
-        // 裝備與嘲諷判定
+        // 裝備與嘲諷判定 (加上全形頓號)
         const weaponItem = this.state.items.find(i => Object.keys(this.weaponPaths).includes(i) || Object.values(this.weaponPaths).includes(i) || ['👑 王者之聖劍', '☄️ 破曉流星弓', '🐉 滅世龍吟槍'].includes(i)) || "";
         const armorItem = this.state.items.find(i => this.armorPath.includes(i)) || "";
-        const finalEquipRaw = [armorItem, weaponItem].filter(Boolean).join(' ');
-        const finalEquip = finalEquipRaw.replace(/[^a-zA-Z\u4e00-\u9fa5\s]/g, '').trim(); // 移除 Emoji
+        const finalEquip = [armorItem, weaponItem].filter(Boolean).join(' 、 '); 
 
         const hasWeapon = !!weaponItem;
         let mockeryHTML = !hasWeapon ? `<div class="fade-in-row mockery-text" style="animation: fadeUpIn 0.8s forwards 3.3s;">📝 系統額外判定：<br>勇者雖已通關，但未詳閱《鍛造秘笈》，<br>仍全程赤手空拳完成試煉...敬佩！敬佩！</div>` : "";
@@ -509,21 +522,40 @@ const GameEngine = {
             }
         });
 
-        // 🌟 恢復已記錄的特殊 checkbox 狀態
+        // 🌟 恢復第五關的勾選狀態 (但未破關前不反灰鎖死)
         if(this.state.achievements.includes('t5_score_1')) {
             const chk = document.getElementById('chk-t5-1');
-            if (chk) { chk.checked = true; chk.disabled = true; chk.style.opacity = '0.5'; }
+            if (chk && this.state.currentTrial < 5) chk.checked = true; 
         }
         if(this.state.achievements.includes('t5_score_2')) {
             const chk = document.getElementById('chk-t5-2');
-            if (chk) { chk.checked = true; chk.disabled = true; chk.style.opacity = '0.5'; }
+            if (chk && this.state.currentTrial < 5) chk.checked = true;
         }
-        if(this.state.bankStatus) {
-            const map = { 'have': 'chk-bank-have', 'process': 'chk-bank-process', 'done': 'chk-bank-done' };
-            const id = map[this.state.bankStatus];
-            if (id) {
-                const el = document.getElementById(id);
-                if (el) { el.checked = true; }
+
+        // 🌟 第六關霸道單選深度鎖定邏輯
+        const have = document.getElementById('chk-bank-have');
+        const process = document.getElementById('chk-bank-process');
+        const done = document.getElementById('chk-bank-done');
+        const bDate = document.getElementById('input-bank-date');
+        const bBtn = document.getElementById('btn-lock-bank');
+
+        if (have && process && done && this.state.currentTrial < 6) {
+            // 先全部解鎖恢復正常
+            have.disabled = false; process.disabled = false; done.disabled = false;
+            if(!this.state.bankDateLocked) { bDate.disabled = false; bBtn.disabled = false; }
+            
+            // 再依照狀態進行封印
+            if (this.state.bankStatus === 'have') {
+                have.checked = true;
+                process.disabled = true; done.disabled = true;
+                bDate.disabled = true; bBtn.disabled = true;
+            } else if (this.state.bankStatus === 'process') {
+                process.checked = true;
+                have.disabled = true; done.disabled = true;
+            } else if (this.state.bankStatus === 'done') {
+                done.checked = true;
+                have.disabled = true; process.disabled = true;
+                bDate.disabled = true; bBtn.disabled = true;
             }
         }
     }
