@@ -75,8 +75,8 @@
 
         .tracking-header { text-align: center; display: block; margin-bottom: 15px; font-weight: bold; color: #cccccc; }
         .date-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
-        .date-row input[type="date"] { background: #1a1a1a; border: 1px solid #444; color: rgba(255, 255, 255, 0.7); padding: 8px; border-radius: 4px; flex: 2; outline: none; text-align: center; font-family: inherit; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.7); cursor: pointer; }
+        
+        /* 日期欄位樣式將受 CSS 檔案統一管控，若轉文字也可置中 */
 
         .btn-lock { background: #232a35; color: rgba(255, 255, 255, 0.7); border: 1px solid #4ade80; padding: 8px 12px; border-radius: 4px; font-size: 14px; cursor: pointer; flex: 1; transition: 0.3s; white-space: nowrap; }
         .btn-lock:hover { background: #4ade80; color: #000; }
@@ -88,7 +88,7 @@
         .btn-confirm { width: 100%; padding: 12px; background: #2d3748; color: #4ade80; font-weight: bold; font-size: 15px; border: 1px solid #4ade80; border-radius: 6px; cursor: pointer; letter-spacing: 1px; transition: all 0.3s ease; }
 
         @media (max-width: 480px) {
-            .date-row input[type="date"] { flex: 2.5; }
+            .date-row input[type="date"], .date-row input[type="text"] { flex: 2.5; }
             .btn-lock { flex: 1; font-size: 13px; }
         }
     </style>
@@ -237,8 +237,10 @@
                     　　- 正式踏入榮耀殿堂
                 </span>
                 
-                <label class="check-item"><input type="checkbox" id="chk-bank-have"> 已有台新國際商業銀行戶頭</label>
-                <label class="check-item"><input type="checkbox" id="chk-bank-process"> 申辦中</label>
+                <label class="check-item"><input type="checkbox" class="bank-chk" id="chk-bank-have" onclick="checkBankLogic(this, 'have')"> 已有台新國際商業銀行戶頭</label>
+                <label class="check-item"><input type="checkbox" class="bank-chk" id="chk-bank-process" onclick="checkBankLogic(this, 'process')"> 申辦中</label>
+                <label class="check-item"><input type="checkbox" class="bank-chk" id="chk-bank-done" onclick="checkBankLogic(this, 'done')"> 辦理完成</label>
+                
                 <div class="tracking-box">
                     <div class="date-row"><label>預計辦理日期：</label><input type="date" id="input-bank-date"><button class="btn-lock" id="btn-lock-bank" onclick="GameEngine.lockDate('bank')">確認</button></div>
                     <div class="lock-note">⚠️ 日期一經鎖定無法修改,若需調整請洽人資承辦.</div>
@@ -271,17 +273,42 @@
         function checkTrial1(e) { if (!document.getElementById('chk-guide').checked || !document.getElementById('chk-forge').checked || !document.getElementById('chk-risk').checked) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 1); }
         function checkTrial3(e) { const chks = document.querySelectorAll('.chk-trial3'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 3); }
         function checkTrial4(e) { const chks = document.querySelectorAll('.chk-trial4'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 4); }
-        
-        /* 🌟 新增：第五關防呆，確保獨立計分項目都有打勾才能過關 */
         function checkTrial5(e) { const chks = document.querySelectorAll('.chk-trial5'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 5); }
 
+        /* 🌟 單選防呆連動邏輯 */
+        function checkBankLogic(clickedEl, statusType) {
+            if (clickedEl.checked) {
+                document.querySelectorAll('.bank-chk').forEach(el => {
+                    if (el !== clickedEl) el.checked = false;
+                });
+                GameEngine.state.bankStatus = statusType;
+                GameEngine.save();
+            } else {
+                GameEngine.state.bankStatus = null;
+                GameEngine.save();
+            }
+        }
+
+        /* 🌟 第六關最終決斷邏輯 */
         function checkTrial6(e) { 
-            const haveBank = document.getElementById('chk-bank-have').checked;
-            const processBank = document.getElementById('chk-bank-process').checked;
-            if (!haveBank && !processBank) { 
+            const status = GameEngine.state.bankStatus;
+            if (!status) { 
                 alert("⚠️ 勇主請注意\n請勾選銀行戶頭狀態，才能推進！"); 
                 return; 
             } 
+            
+            // 若為「申辦中」，僅記錄不封印關卡
+            if (status === 'process') {
+                const bDate = document.getElementById('input-bank-date').value;
+                if (!bDate && !GameEngine.state.bankDateLocked) {
+                    alert("⚠️ 勇主請注意\n請填寫並鎖定預計辦理日期！");
+                    return;
+                }
+                alert("📝 已記錄進度，等待辦理完成");
+                return; 
+            }
+
+            // 若為「已有」或「辦理完成」，進入大結局
             GameEngine.completeTrial(e, 6); 
         }
     </script>
