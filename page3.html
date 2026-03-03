@@ -76,8 +76,6 @@
         .tracking-header { text-align: center; display: block; margin-bottom: 15px; font-weight: bold; color: #cccccc; }
         .date-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
         
-        /* 日期欄位樣式將受 CSS 檔案統一管控，若轉文字也可置中 */
-
         .btn-lock { background: #232a35; color: rgba(255, 255, 255, 0.7); border: 1px solid #4ade80; padding: 8px 12px; border-radius: 4px; font-size: 14px; cursor: pointer; flex: 1; transition: 0.3s; white-space: nowrap; }
         .btn-lock:hover { background: #4ade80; color: #000; }
         .btn-lock:disabled { opacity: 0.3; cursor: not-allowed; border-color: #555; color: #666; }
@@ -219,8 +217,8 @@
                 <a href="https://mys0819.github.io/LCS1/" target="_blank" class="external-link">🔗 開啟勞工名卡填寫表單</a>
                 
                 <div style="margin-top: 10px;">
-                    <label class="check-item"><input type="checkbox" class="chk-trial5" id="chk-t5-1" onclick="GameEngine.addTrial5Score(event, 't5_score_1')"> 勞工名卡已填寫完成</label>
-                    <label class="check-item"><input type="checkbox" class="chk-trial5" id="chk-t5-2" onclick="GameEngine.addTrial5Score(event, 't5_score_2')"> 勞動契約已填寫完成</label>
+                    <label class="check-item"><input type="checkbox" class="chk-trial5" id="chk-t5-1" onclick="GameEngine.toggleTrial5Score(event, 't5_score_1')"> 勞工名卡已填寫完成</label>
+                    <label class="check-item"><input type="checkbox" class="chk-trial5" id="chk-t5-2" onclick="GameEngine.toggleTrial5Score(event, 't5_score_2')"> 勞動契約已填寫完成</label>
                 </div>
 
                 <div class="action-center"><button class="btn-confirm" id="btn-trial-5" onclick="checkTrial5(event)">🚀 提交本關任務</button></div>
@@ -273,20 +271,18 @@
         function checkTrial1(e) { if (!document.getElementById('chk-guide').checked || !document.getElementById('chk-forge').checked || !document.getElementById('chk-risk').checked) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 1); }
         function checkTrial3(e) { const chks = document.querySelectorAll('.chk-trial3'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 3); }
         function checkTrial4(e) { const chks = document.querySelectorAll('.chk-trial4'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 4); }
+        
         function checkTrial5(e) { const chks = document.querySelectorAll('.chk-trial5'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 5); }
 
-        /* 🌟 單選防呆連動邏輯 */
+        /* 🌟 單選霸道防呆邏輯 */
         function checkBankLogic(clickedEl, statusType) {
             if (clickedEl.checked) {
-                document.querySelectorAll('.bank-chk').forEach(el => {
-                    if (el !== clickedEl) el.checked = false;
-                });
                 GameEngine.state.bankStatus = statusType;
-                GameEngine.save();
             } else {
                 GameEngine.state.bankStatus = null;
-                GameEngine.save();
             }
+            GameEngine.save();
+            GameEngine.updateButtonStyles(); // 即刻刷新封印狀態
         }
 
         /* 🌟 第六關最終決斷邏輯 */
