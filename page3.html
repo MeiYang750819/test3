@@ -6,7 +6,7 @@
     <title>💼 勇者入職試煉</title>
 
     <meta property="og:title" content="🛠️｜MYs系統｜新手村登入區" />
-    <meta property="og:description" content="闖關冒險即將開始！詳閱任務指南並完成關卡解鎖職場新身分！" />
+    <meta property="og:description" content="闖關冒險即將開始！詳閱任務指南並完成關卡，解鎖職場新身分！" />
     <meta property="og:image" content="https://meiyang750819.github.io/test3/assets/img1/MYs_logo_去背1.png" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://meiyang750819.github.io/test3/" />
@@ -217,7 +217,13 @@
                     　　- 勞動契約查看並簽署
                 </span>
                 <a href="https://mys0819.github.io/LCS1/" target="_blank" class="external-link">🔗 開啟勞工名卡填寫表單</a>
-                <div class="action-center"><button class="btn-confirm" id="btn-trial-5" onclick="GameEngine.completeTrial(event, 5)">🚀 提交本關任務</button></div>
+                
+                <div style="margin-top: 10px;">
+                    <label class="check-item"><input type="checkbox" class="chk-trial5" id="chk-t5-1" onclick="GameEngine.addTrial5Score(event, 't5_score_1')"> 勞工名卡已填寫完成</label>
+                    <label class="check-item"><input type="checkbox" class="chk-trial5" id="chk-t5-2" onclick="GameEngine.addTrial5Score(event, 't5_score_2')"> 勞動契約已填寫完成</label>
+                </div>
+
+                <div class="action-center"><button class="btn-confirm" id="btn-trial-5" onclick="checkTrial5(event)">🚀 提交本關任務</button></div>
             </div>
         </details>
 
@@ -250,7 +256,7 @@
     </footer>
 
     <script>
-        const fetchedData = { companyName: "FIZZ FIZZ.TAIPEI", team: "外場團隊", type: "兼職", userName: "測試員" };
+        const fetchedData = { companyName: "MYs studio", team: "外場團隊", type: "兼職", userName: "測試員" };
         function applyData(data) {
             document.querySelectorAll('.dyn-company').forEach(el => el.innerText = data.companyName);
             document.querySelectorAll('.dyn-team').forEach(el => el.innerText = data.team);
@@ -261,15 +267,19 @@
             applyData(fetchedData);
             if (typeof GameEngine !== 'undefined') { GameEngine.init(); }
         });
-        function checkTrial1(e) { if (!document.getElementById('chk-guide').checked || !document.getElementById('chk-forge').checked || !document.getElementById('chk-risk').checked) { alert("⚠️ 勇者請注意：必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 1); }
-        function checkTrial3(e) { const chks = document.querySelectorAll('.chk-trial3'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇者請注意：前三項必備文件必須勾選完成，才能推進！"); return; } GameEngine.completeTrial(e, 3); }
-        function checkTrial4(e) { const chks = document.querySelectorAll('.chk-trial4'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇者請注意：必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 4); }
         
+        function checkTrial1(e) { if (!document.getElementById('chk-guide').checked || !document.getElementById('chk-forge').checked || !document.getElementById('chk-risk').checked) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 1); }
+        function checkTrial3(e) { const chks = document.querySelectorAll('.chk-trial3'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 3); }
+        function checkTrial4(e) { const chks = document.querySelectorAll('.chk-trial4'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 4); }
+        
+        /* 🌟 新增：第五關防呆，確保獨立計分項目都有打勾才能過關 */
+        function checkTrial5(e) { const chks = document.querySelectorAll('.chk-trial5'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 5); }
+
         function checkTrial6(e) { 
             const haveBank = document.getElementById('chk-bank-have').checked;
             const processBank = document.getElementById('chk-bank-process').checked;
             if (!haveBank && !processBank) { 
-                alert("⚠️ 勇者請注意：請勾選銀行戶頭狀態，才能推進！"); 
+                alert("⚠️ 勇主請注意\n請勾選銀行戶頭狀態，才能推進！"); 
                 return; 
             } 
             GameEngine.completeTrial(e, 6); 
