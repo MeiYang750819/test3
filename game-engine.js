@@ -1,6 +1,6 @@
 /* --------配色／字級設定區（可自行調整）-------- */
 const GameEngine = {
-    API_URL: "https://script.google.com/macros/s/AKfycbxVnxS042l8DxIcuMdTpB2oQNNEz21poQ23AkYsGPbKT-SYKDLiziZ_AMwSAS1YbvA-iQ/exec",
+    API_URL: "https://script.google.com/macros/s/AKfycbzQp1nkOe18tqxJhnEMxXS4FkODaLjDHEvTJV6DXvVTBP7tLVMDNOflsXHc9nKCSoHQ3w/exec",
     state: {
         sysId: null, userName: "勇者", companyName: "載入中...", team: "載入中...", jobType: "載入中...",
         score: 0, items: ['👕 粗製布衣'], location: '⛺ 新手村', status: '📦 檢整裝備中', achievements: [],
@@ -28,7 +28,7 @@ const GameEngine = {
                 if (res.success) { 
                     this.state.companyName = res.data.companyName;
                     this.state.team = res.data.team;
-                    this.state.jobType = res.data.type;
+                    this.state.jobType = res.data.type; // 修正連線，抓取兼職/正職
                     this.state.userName = res.data.userName;
                     this.updateUI(); 
                     this.fetchFullData(); 
@@ -64,7 +64,7 @@ const GameEngine = {
         if (!this.state.sysId) return;
         Object.assign(payload, { id: this.state.sysId, userName: this.state.userName, baseScore: this.state.baseScore });
         fetch(this.API_URL, { method: "POST", body: JSON.stringify(payload) })
-            .then(res => res.json()).then(res => { if (res.success) { this.state.score = res.newScoreData.totalScore; this.updateUI(); } });
+            .then(res => res.json()).then(result => { if (result.success) { this.state.score = result.newScoreData.totalScore; this.updateUI(); } });
     },
 
     completeTrial(event, trialNum) {
@@ -72,15 +72,8 @@ const GameEngine = {
         const scoreGains = { 1:16, 2:16, 3:21, 4:16, 5:16, 6:0 };
         this.state.currentTrial = trialNum;
         this.state.baseScore += (scoreGains[trialNum] || 0);
-        
-        let payload = {};
-        if (trialNum === 1) payload.trial1Done = true;
-        if (trialNum === 2) payload.trial2Done = true;
-        if (trialNum === 3) payload.trial3Submit = true;
-
-        // 升級裝備邏輯
         this.upgradeArmor();
-        this.save(); this.updateButtonStyles(); this.syncToBackend(payload);
+        this.save(); this.updateButtonStyles(); this.syncToBackend({ [`trial${trialNum}Done`]: true });
         this.showToast('📣 任務已完成，請繼續前進！');
         setTimeout(() => this.updateUI(), 1000);
     },
@@ -103,8 +96,8 @@ const GameEngine = {
         document.head.appendChild(s);
     },
     createFloatingText(e, txt) { 
-        const x = e.clientX || (e.touches && e.touches[0].clientX) || 0; 
-        const y = e.clientY || (e.touches && e.touches[0].clientY) || 0; 
+        const x = (e.clientX || (e.touches && e.touches[0].clientX)) || 0; 
+        const y = (e.clientY || (e.touches && e.touches[0].clientY)) || 0; 
         const el = document.createElement('div'); el.className = 'floating-text'; el.innerText = txt; el.style.left = `${x}px`; el.style.top = `${y}px`; document.body.appendChild(el); setTimeout(() => el.remove(), 1500); 
     },
     showToast(m) { const t = document.createElement('div'); t.className = 'game-toast'; t.innerText = m; document.body.appendChild(t); setTimeout(() => t.classList.add('show'), 100); setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, 3000); },
@@ -116,7 +109,7 @@ const GameEngine = {
         document.querySelectorAll('.dyn-type').forEach(el => el.innerText = this.state.jobType);
         document.querySelectorAll('.dyn-name').forEach(el => el.innerText = this.state.userName);
         const rank = this.ranks.find(r => this.state.score >= r.min) || this.ranks[this.ranks.length - 1];
-        if (document.getElementById('rank-text')) document.getElementById('rank-text').innerHTML = `<span style="color:#fbbf24;">戰力：</span>${rank.title}　｜　<span style="color:#fbbf24;">關卡：</span>${this.state.location}`;
+        if (document.getElementById('rank-text')) document.getElementById('rank-text').innerHTML = `<span style="color:#fbbf24;">戰力：</span>${rank.title}`;
         if (document.getElementById('status-tag')) document.getElementById('status-tag').innerHTML = `<span style="color:#8ab4f8;">道具：</span>${this.state.items.join(' ')}　｜　<span style="color:#8ab4f8;">狀態：</span>${this.state.status}`;
         if (document.getElementById('score-text')) document.getElementById('score-text').innerText = this.state.score + "分";
         if (document.getElementById('score-fill')) document.getElementById('score-fill').style.width = Math.min(this.state.score, 100) + "%";
