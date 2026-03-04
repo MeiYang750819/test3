@@ -115,7 +115,7 @@
     <main class="tab-content active">
 
         <details id="detail-trial-1" open>
-            <summary class="main-summary">【新手報到】啟程點</summary>
+            <summary class="main-summary" onclick="GameEngine.unlock(event, 'fold_onboard', 'big', '入職報到說明', 2)">【新手報到】啟程點</summary>
             <div class="details-body">
                 <span class="task-target">
                     📣 任務目標 <br>
@@ -273,37 +273,19 @@
         function checkTrial4(e) { const chks = document.querySelectorAll('.chk-trial4'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 4); }
         function checkTrial5(e) { const chks = document.querySelectorAll('.chk-trial5'); let all = true; chks.forEach(c => { if(!c.checked) all = false; }); if (!all) { alert("⚠️ 勇主請注意\n必須勾選所有確認項目，才能推進！"); return; } GameEngine.completeTrial(e, 5); }
 
-        /* 🌟 單選霸道防呆邏輯 */
         function checkBankLogic(clickedEl, statusType) {
-            if (clickedEl.checked) {
-                GameEngine.state.bankStatus = statusType;
-            } else {
-                GameEngine.state.bankStatus = null;
-            }
-            GameEngine.save();
-            GameEngine.updateButtonStyles(); // 即刻刷新封印狀態
+            if (clickedEl.checked) { GameEngine.state.bankStatus = statusType; } else { GameEngine.state.bankStatus = null; }
+            GameEngine.save(); GameEngine.updateButtonStyles();
         }
 
-        /* 🌟 第六關最終決斷邏輯 */
         function checkTrial6(e) { 
             const status = GameEngine.state.bankStatus;
-            if (!status) { 
-                alert("⚠️ 勇主請注意\n請勾選銀行戶頭狀態，才能推進！"); 
-                return; 
-            } 
-            
-            // 若為「申辦中」，僅記錄不封印關卡
+            if (!status) { alert("⚠️ 勇主請注意\n請勾選銀行戶頭狀態，才能推進！"); return; }
             if (status === 'process') {
                 const bDate = document.getElementById('input-bank-date').value;
-                if (!bDate && !GameEngine.state.bankDateLocked) {
-                    alert("⚠️ 勇主請注意\n請填寫並鎖定預計辦理日期！");
-                    return;
-                }
-                alert("📝 已記錄進度，等待辦理完成");
-                return; 
+                if (!bDate && !GameEngine.state.bankDateLocked) { alert("⚠️ 勇主請注意\n請填寫並鎖定預計辦理日期！"); return; }
+                alert("📝 已記錄進度，等待辦理完成"); return; 
             }
-
-            // 若為「已有」或「辦理完成」，進入大結局
             GameEngine.completeTrial(e, 6); 
         }
     </script>
